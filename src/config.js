@@ -13,7 +13,7 @@ export const SHOP = {
 }
 
 // Admin login password. Change this before sharing the app.
-export const ADMIN_PASSWORD = 'orange@123'
+export const ADMIN_PASSWORD = 'Mani@123'
 
 // Appliance types offered
 export const APPLIANCE_KEYS = ['ac', 'refrigerator', 'washingMachine']
