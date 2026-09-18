@@ -69,29 +69,11 @@ export default function Booking() {
     return Object.keys(err).length === 0
   }
 
-  function buildWhatsAppText(record) {
-    const lines = [
-      `*${SHOP.name} - New Service Booking*`,
-      `ID: ${record.id}`,
-      `Name: ${record.name}`,
-      `Phone: ${record.phone}`,
-      `Address: ${record.address}`,
-      `Appliance: ${t(record.appliance)}`,
-      `Brand: ${record.brand || '-'}`,
-      `Problem: ${record.issue || '-'}`,
-      `Date: ${record.date}`,
-      `Time: ${record.time}`,
-    ]
-    return encodeURIComponent(lines.join('\n'))
-  }
-
   function handleSubmit(e) {
     e.preventDefault()
     if (!validate()) return
     const finalBrand = form.brand === 'Other' ? (form.customBrand.trim() || 'Other') : form.brand
-    const record = addBooking({ ...form, brand: finalBrand })
-    const url = `https://wa.me/${SHOP.whatsapp}?text=${buildWhatsAppText(record)}`
-    window.open(url, '_blank')
+    addBooking({ ...form, brand: finalBrand })
     setDone(true)
   }
 
