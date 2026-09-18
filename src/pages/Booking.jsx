@@ -20,6 +20,7 @@ export default function Booking() {
   const { t, lang } = useI18n()
   const location = useLocation()
   const navigate = useNavigate()
+  const preset = location.state?.appliance || ''
   const [couponCode, setCouponCode] = useState(location.state?.coupon || '')
 
   const [form, setForm] = useState({
