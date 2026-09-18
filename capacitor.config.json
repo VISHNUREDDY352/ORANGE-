@@ -1,0 +1,9 @@
+{
+  "appId": "com.orangerefrigeration.app",
+  "appName": "Orange Refrigeration",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true
+  }
+}
