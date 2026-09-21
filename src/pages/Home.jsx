@@ -139,7 +139,7 @@ export default function Home() {
       {/* Hero */}
       <section className="hero">
         <div className="hero-logo">
-          <img src="/logo.svg" alt="Orange Logo" className="hero-logo-img" />
+          <img src="/logo.png" alt="Orange Logo" className="hero-logo-img" />
         </div>
         <h1 className="hero-title">{SHOP.name}</h1>
         <p className="hero-prop">{t('proprietor')}: {SHOP.proprietor}</p>

@@ -31,7 +31,7 @@ function TopBar() {
               ←
             </button>
           )}
-          <img src="/logo.svg" alt="Orange Logo" className="logo-img" />
+          <img src="/logo.png" alt="Orange Logo" className="logo-img" />
           <span className="brand-name">{SHOP.shortName || 'Orange'}</span>
           <button
             type="button"
