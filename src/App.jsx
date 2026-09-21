@@ -39,7 +39,8 @@ function TopBar() {
             title={isAdmin ? 'Switch to User Page' : 'Switch to Admin Page'}
             aria-label={isAdmin ? 'Orange Admin (Click for User Page)' : 'Orange User (Click for Admin Page)'}
           >
-            {isAdmin ? 'ADMIN' : 'USER'}
+            <span>{isAdmin ? 'ADMIN' : 'USER'}</span>
+            <span className="brand-tag-arrow">▾</span>
           </button>
         </div>
         <button
