@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 import { SHOP, APPLIANCE_KEYS, APPLIANCE_IMAGES } from '../config.js'
-import { getBookings, subscribe } from '../store.js'
+import { getBookings, subscribe, getOffers, subscribeOffers, DEFAULT_OFFERS } from '../store.js'
 
 const APPLIANCE_ICONS = {
   ac: '❄️',
@@ -23,66 +23,19 @@ const BRANDS_LIST = [
   { name: 'Lloyd', logo: '💎' },
 ]
 
-const PROMO_ADS = [
-  {
-    id: 1,
-    badge: '⚡ EXPERT AC SERVICE',
-    tag: 'DOORSTEP SERVICE',
-    title: 'AC Service & Free Gas Pressure Test',
-    desc: 'Deep jet wash outdoor & indoor unit overhaul for super fast cooling',
-    icon: '❄️',
-    image: '/promo-ac.png',
-    gradient: 'linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.82) 100%)',
-    border: 'rgba(242, 101, 34, 0.6)',
-    cta: 'Book AC Service',
-    appliance: 'ac',
-  },
-  {
-    id: 2,
-    badge: '🛠️ COMBO SERVICE',
-    tag: 'COMPLETE CARE',
-    title: '3-in-1 Complete Home Maintenance Pack',
-    desc: 'AC + Refrigerator + Washing Machine Full Inspection & Tune-Up',
-    icon: '🏠',
-    image: '/promo-combo.png',
-    gradient: 'linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.82) 100%)',
-    border: 'rgba(242, 101, 34, 0.6)',
-    cta: 'Book Combo Pack',
-    appliance: 'ac',
-  },
-  {
-    id: 3,
-    badge: '🌀 REFRIGERATOR CARE',
-    tag: 'EXPERT REPAIR',
-    title: 'Fridge Cooling & Compressor Overhaul',
-    desc: 'Fast gas leak detection, thermostat fix & deep cooling restoration',
-    icon: '🧊',
-    image: '/promo-fridge.jpg',
-    gradient: 'linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.82) 100%)',
-    border: 'rgba(242, 101, 34, 0.6)',
-    cta: 'Book Fridge Repair',
-    appliance: 'refrigerator',
-  },
-  {
-    id: 4,
-    badge: '🚀 EXPRESS SERVICE',
-    tag: '45-MIN ARRIVAL',
-    title: 'Same-Day Fast Repair & Diagnosis',
-    desc: 'Urgent doorstep technician arrival anywhere in Sullurupeta & nearby',
-    icon: '⚡',
-    image: '/hero-bg.png',
-    gradient: 'linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.82) 100%)',
-    border: 'rgba(242, 101, 34, 0.6)',
-    cta: 'Book Express Visit',
-    appliance: 'ac',
-  },
-]
-
 export default function Home() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const [adIndex, setAdIndex] = useState(0)
   const [acceptedBooking, setAcceptedBooking] = useState(null)
+  const [offers, setOffers] = useState(() => getOffers())
+
+  // Active banner / festival cards for top slider
+  const activeBanners = offers.filter((o) => o.active && (o.type === 'banner' || o.type === 'festival' || !o.type))
+  const displayBanners = activeBanners.length > 0 ? activeBanners : DEFAULT_OFFERS
+
+  // Active discount vouchers / coupons
+  const activeVouchers = offers.filter((o) => o.active && (o.type === 'voucher' || o.couponCode))
 
   const checkAcceptedBooking = () => {
     const latestId = localStorage.getItem('latest_booking_id')
@@ -98,26 +51,30 @@ export default function Home() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setAdIndex((i) => (i + 1) % PROMO_ADS.length)
+      setAdIndex((i) => (i + 1) % (displayBanners.length || 1))
     }, 4200)
+
     checkAcceptedBooking()
-    const unsub = subscribe(checkAcceptedBooking)
+    const unsubBookings = subscribe(checkAcceptedBooking)
+    const unsubOffers = subscribeOffers(() => setOffers(getOffers()))
+
     return () => {
       clearInterval(timer)
-      unsub()
+      unsubBookings()
+      unsubOffers()
     }
-  }, [])
+  }, [displayBanners.length])
 
   const handlePrevAd = () => {
-    setAdIndex((i) => (i - 1 + PROMO_ADS.length) % PROMO_ADS.length)
+    setAdIndex((i) => (i - 1 + displayBanners.length) % displayBanners.length)
   }
 
   const handleNextAd = () => {
-    setAdIndex((i) => (i + 1) % PROMO_ADS.length)
+    setAdIndex((i) => (i + 1) % displayBanners.length)
   }
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SHOP.mapsQuery)}`
-  const ad = PROMO_ADS[adIndex]
+  const ad = displayBanners[adIndex % displayBanners.length] || displayBanners[0]
 
   return (
     <div className="page">
@@ -150,45 +107,114 @@ export default function Home() {
       </section>
 
       {/* Promotional Ads Slider Banner */}
-      <section className="section">
-        <div className="section-header">
-          <h2 className="section-title">🔥 {t('specialOffers')}</h2>
-          <span className="banner-badge-indicator">{adIndex + 1}/{PROMO_ADS.length}</span>
-        </div>
-        <div
-          className="promo-card"
-          onClick={() => navigate('/book', { state: { appliance: ad.appliance } })}
-          style={{
-            background: `${ad.gradient}, url('${ad.image}') center/cover no-repeat`,
-            borderColor: ad.border,
-            cursor: 'pointer',
-          }}
-        >
-          <div className="promo-top">
-            <span className="promo-badge">{ad.badge}</span>
-            <span className="promo-tag-pill">{ad.tag}</span>
+      {ad && (
+        <section className="section">
+          <div className="section-header">
+            <h2 className="section-title">🔥 {t('specialOffers')}</h2>
+            <span className="banner-badge-indicator">
+              {(adIndex % displayBanners.length) + 1}/{displayBanners.length}
+            </span>
           </div>
-          <h3 className="promo-title">{ad.title}</h3>
-          <p className="promo-desc">{ad.desc}</p>
-          <div className="promo-bottom">
-            <div className="promo-controls" onClick={(e) => e.stopPropagation()}>
-              <button type="button" className="promo-arrow" onClick={handlePrevAd} aria-label="Previous banner">‹</button>
-              <div className="promo-dots">
-                {PROMO_ADS.map((_, i) => (
-                  <button
-                    type="button"
-                    key={i}
-                    className={`promo-dot ${i === adIndex ? 'active' : ''}`}
-                    onClick={() => setAdIndex(i)}
-                    aria-label={`Go to slide ${i + 1}`}
-                  />
-                ))}
+          <div
+            className="promo-card"
+            onClick={() => navigate('/book', {
+              state: {
+                appliance: ad.appliance && ad.appliance !== 'all' ? ad.appliance : undefined,
+                appliedVoucher: ad.couponCode ? ad : undefined,
+              },
+            })}
+            style={{
+              background: ad.image
+                ? `${ad.gradient || 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.82) 100%)'}, url('${ad.image}') center/cover no-repeat`
+                : ad.gradient || 'linear-gradient(135deg, #b45309 0%, #78350f 100%)',
+              borderColor: ad.border || 'rgba(242, 101, 34, 0.6)',
+              cursor: 'pointer',
+            }}
+          >
+            <div className="promo-top">
+              <span className="promo-badge">{ad.badge}</span>
+              <span className="promo-tag-pill">{ad.tag}</span>
+            </div>
+            <h3 className="promo-title">{ad.title}</h3>
+            <p className="promo-desc">{ad.desc}</p>
+            <div className="promo-bottom">
+              {ad.couponCode && (
+                <div className="promo-coupon-badge">
+                  Use Code: <strong>{ad.couponCode}</strong>
+                </div>
+              )}
+              <div className="promo-controls" onClick={(e) => e.stopPropagation()}>
+                <button type="button" className="promo-arrow" onClick={handlePrevAd} aria-label="Previous banner">‹</button>
+                <div className="promo-dots">
+                  {displayBanners.map((_, i) => (
+                    <button
+                      type="button"
+                      key={i}
+                      className={`promo-dot ${i === (adIndex % displayBanners.length) ? 'active' : ''}`}
+                      onClick={() => setAdIndex(i)}
+                      aria-label={`Go to slide ${i + 1}`}
+                    />
+                  ))}
+                </div>
+                <button type="button" className="promo-arrow" onClick={handleNextAd} aria-label="Next banner">›</button>
               </div>
-              <button type="button" className="promo-arrow" onClick={handleNextAd} aria-label="Next banner">›</button>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Active Discount Vouchers & Festival Coupons Section */}
+      {activeVouchers.length > 0 && (
+        <section className="section">
+          <div className="section-header">
+            <h2 className="section-title">🎟️ Discount Coupons & Vouchers</h2>
+            <span className="banner-badge-indicator">{activeVouchers.length} Deals</span>
+          </div>
+          <div className="vouchers-list">
+            {activeVouchers.map((v) => (
+              <div
+                key={v.id}
+                className="voucher-ticket-card"
+                onClick={() => navigate('/book', {
+                  state: {
+                    appliance: v.appliance && v.appliance !== 'all' ? v.appliance : undefined,
+                    appliedVoucher: v,
+                  },
+                })}
+              >
+                <div className="vtc-left">
+                  <span className="vtc-badge">{v.badge || 'COUPON'}</span>
+                  <div className="vtc-title">{v.title}</div>
+                  <div className="vtc-desc">{v.desc}</div>
+                  {v.couponCode && (
+                    <div className="vtc-code-pill">
+                      CODE: <strong>{v.couponCode}</strong>
+                    </div>
+                  )}
+                </div>
+                <div className="vtc-right">
+                  <div className="vtc-discount">{v.discount || v.tag}</div>
+                  <button
+                    type="button"
+                    className="vtc-apply-btn"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigate('/book', {
+                        state: {
+                          appliance: v.appliance && v.appliance !== 'all' ? v.appliance : undefined,
+                          appliedVoucher: v,
+                        },
+                      })
+                    }}
+                  >
+                    Apply & Book
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Services Grid */}
       <section className="section">

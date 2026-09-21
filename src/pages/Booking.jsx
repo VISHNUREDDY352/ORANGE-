@@ -21,6 +21,7 @@ export default function Booking() {
   const location = useLocation()
   const navigate = useNavigate()
   const preset = location.state?.appliance || ''
+  const [voucher, setVoucher] = useState(() => location.state?.appliedVoucher || null)
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -46,6 +47,9 @@ export default function Booking() {
         brand: availableBrands.includes(f.brand) ? f.brand : '',
       }))
     }
+    if (location.state?.appliedVoucher) {
+      setVoucher(location.state.appliedVoucher)
+    }
   }, [location.state])
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
@@ -68,24 +72,50 @@ export default function Booking() {
     e.preventDefault()
     if (!validate()) return
     const finalBrand = form.brand === 'Other' ? (form.customBrand.trim() || 'Other') : form.brand
-    addBooking({ ...form, brand: finalBrand })
+    const voucherText = voucher ? `${voucher.couponCode || voucher.title} (${voucher.discount || ''})` : ''
+    addBooking({ ...form, brand: finalBrand, voucher: voucherText })
     setDone(true)
   }
 
   function reset() {
     setForm({ name: '', phone: '', address: '', appliance: '', brand: '', customBrand: '', issue: '', date: '', time: '' })
+    setVoucher(null)
     setErrors({})
     setDone(false)
   }
 
   if (done) {
+    const waText = `Hi Orange Services, I booked an appliance service!\n\n` +
+      `Name: ${form.name}\n` +
+      `Phone: ${form.phone}\n` +
+      `Appliance: ${t(form.appliance)}\n` +
+      `Brand: ${form.brand === 'Other' ? form.customBrand : form.brand}\n` +
+      `Date: ${form.date} (${form.time})\n` +
+      `Address: ${form.address}\n` +
+      (voucher ? `🎟️ Voucher Applied: ${voucher.couponCode || voucher.title} (${voucher.discount || ''})\n` : '') +
+      `Please confirm.`
+
     return (
       <div className="page center-page">
         <div className="success-card">
           <div className="success-ico">✅</div>
           <h2>{t('bookingSuccess')}</h2>
           <p>{t('bookingSuccessDesc')}</p>
-          <button className="btn btn-primary" onClick={reset}>{t('newBooking')}</button>
+          {voucher && (
+            <div className="success-voucher-note">
+              🎟️ Applied Offer: <strong>{voucher.couponCode || voucher.title}</strong> ({voucher.discount})
+            </div>
+          )}
+          <a
+            className="btn btn-whatsapp btn-block"
+            style={{ marginTop: '8px' }}
+            href={`https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent(waText)}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            💬 {t('sendWhatsApp') || 'Send on WhatsApp'}
+          </a>
+          <button className="btn btn-outline" style={{ marginTop: '8px' }} onClick={reset}>{t('newBooking')}</button>
         </div>
       </div>
     )
@@ -96,7 +126,28 @@ export default function Booking() {
   return (
     <div className="page">
       <h1 className="page-title">{t('booking')}</h1>
-      
+
+      {voucher && (
+        <div className="applied-voucher-pill-card">
+          <div className="avp-left">
+            <span className="avp-ico">🎟️</span>
+            <div>
+              <div className="avp-title">{voucher.title}</div>
+              <div className="avp-code">
+                {voucher.couponCode && <strong>{voucher.couponCode}</strong>} {voucher.discount && `• ${voucher.discount} Applied`}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="avp-remove-btn"
+            onClick={() => setVoucher(null)}
+            title="Remove voucher"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <form className="form" onSubmit={handleSubmit} noValidate>
         <fieldset className="fieldset">
