@@ -369,7 +369,7 @@ body {
   padding: 2px 8px;
   border-radius: 999px;
 }
-.ad-card {
+.promo-card {
   border-radius: 18px;
   padding: 18px;
   color: #fff;
@@ -379,13 +379,13 @@ body {
   position: relative;
   overflow: hidden;
 }
-.ad-top {
+.promo-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
 }
-.ad-badge {
+.promo-badge {
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.8px;
@@ -397,7 +397,7 @@ body {
   border-radius: 999px;
   text-transform: uppercase;
 }
-.ad-tag-pill {
+.promo-tag-pill {
   font-size: 10px;
   font-weight: 900;
   background: var(--orange);
@@ -408,56 +408,56 @@ body {
   text-transform: uppercase;
   box-shadow: 0 2px 6px rgba(242, 101, 34, 0.4);
 }
-.ad-ico {
+.promo-ico {
   font-size: 24px;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
 }
-.ad-title {
+.promo-title {
   font-size: 18px;
   font-weight: 800;
   margin: 0 0 6px;
   line-height: 1.3;
 }
-.ad-desc {
+.promo-desc {
   font-size: 13px;
   opacity: 0.9;
   margin: 0 0 8px;
   line-height: 1.4;
 }
-.ad-pricing {
+.promo-pricing {
   display: flex;
   align-items: baseline;
   gap: 8px;
   margin: 6px 0 14px;
 }
-.ad-price {
+.promo-price {
   font-size: 22px;
   font-weight: 900;
   color: #fbbf24;
   text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
-.ad-old-price {
+.promo-old-price {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.65);
   text-decoration: line-through;
 }
-.ad-bottom {
+.promo-bottom {
   display: flex;
   align-items: center;
   justify-content: flex-end;
 }
-.ad-cta {
+.promo-cta {
   font-size: 13px;
   padding: 8px 16px;
   border-radius: 999px;
   box-shadow: 0 4px 12px rgba(242, 101, 34, 0.35);
 }
-.ad-controls {
+.promo-controls {
   display: flex;
   align-items: center;
   gap: 8px;
 }
-.ad-arrow {
+.promo-arrow {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.4);
   color: #fff;
@@ -473,16 +473,16 @@ body {
   line-height: 1;
   transition: all .15s ease;
 }
-.ad-arrow:active {
+.promo-arrow:active {
   transform: scale(0.9);
   background: rgba(255, 255, 255, 0.35);
 }
-.ad-dots {
+.promo-dots {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.ad-dot {
+.promo-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -492,7 +492,7 @@ body {
   cursor: pointer;
   transition: all .2s ease;
 }
-.ad-dot.active {
+.promo-dot.active {
   width: 18px;
   border-radius: 999px;
   background: #fff;

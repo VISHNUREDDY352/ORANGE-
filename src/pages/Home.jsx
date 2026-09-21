@@ -31,7 +31,7 @@ const PROMO_ADS = [
     title: 'AC Service & Free Gas Pressure Test',
     desc: 'Deep jet wash outdoor & indoor unit overhaul for super fast cooling',
     icon: '❄️',
-    image: '/ad-ac.png',
+    image: '/promo-ac.png',
     gradient: 'linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.82) 100%)',
     border: 'rgba(242, 101, 34, 0.6)',
     cta: 'Book AC Service',
@@ -44,7 +44,7 @@ const PROMO_ADS = [
     title: '3-in-1 Complete Home Maintenance Pack',
     desc: 'AC + Refrigerator + Washing Machine Full Inspection & Tune-Up',
     icon: '🏠',
-    image: '/ad-combo.png',
+    image: '/promo-combo.png',
     gradient: 'linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.82) 100%)',
     border: 'rgba(242, 101, 34, 0.6)',
     cta: 'Book Combo Pack',
@@ -57,7 +57,7 @@ const PROMO_ADS = [
     title: 'Fridge Cooling & Compressor Overhaul',
     desc: 'Fast gas leak detection, thermostat fix & deep cooling restoration',
     icon: '🧊',
-    image: '/ad-fridge.jpg',
+    image: '/promo-fridge.jpg',
     gradient: 'linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.82) 100%)',
     border: 'rgba(242, 101, 34, 0.6)',
     cta: 'Book Fridge Repair',
@@ -156,7 +156,7 @@ export default function Home() {
           <span className="banner-badge-indicator">{adIndex + 1}/{PROMO_ADS.length}</span>
         </div>
         <div
-          className="ad-card"
+          className="promo-card"
           onClick={() => navigate('/book', { state: { appliance: ad.appliance } })}
           style={{
             background: `${ad.gradient}, url('${ad.image}') center/cover no-repeat`,
@@ -164,27 +164,27 @@ export default function Home() {
             cursor: 'pointer',
           }}
         >
-          <div className="ad-top">
-            <span className="ad-badge">{ad.badge}</span>
-            <span className="ad-tag-pill">{ad.tag}</span>
+          <div className="promo-top">
+            <span className="promo-badge">{ad.badge}</span>
+            <span className="promo-tag-pill">{ad.tag}</span>
           </div>
-          <h3 className="ad-title">{ad.title}</h3>
-          <p className="ad-desc">{ad.desc}</p>
-          <div className="ad-bottom">
-            <div className="ad-controls" onClick={(e) => e.stopPropagation()}>
-              <button type="button" className="ad-arrow" onClick={handlePrevAd} aria-label="Previous banner">‹</button>
-              <div className="ad-dots">
+          <h3 className="promo-title">{ad.title}</h3>
+          <p className="promo-desc">{ad.desc}</p>
+          <div className="promo-bottom">
+            <div className="promo-controls" onClick={(e) => e.stopPropagation()}>
+              <button type="button" className="promo-arrow" onClick={handlePrevAd} aria-label="Previous banner">‹</button>
+              <div className="promo-dots">
                 {PROMO_ADS.map((_, i) => (
                   <button
                     type="button"
                     key={i}
-                    className={`ad-dot ${i === adIndex ? 'active' : ''}`}
+                    className={`promo-dot ${i === adIndex ? 'active' : ''}`}
                     onClick={() => setAdIndex(i)}
                     aria-label={`Go to slide ${i + 1}`}
                   />
                 ))}
               </div>
-              <button type="button" className="ad-arrow" onClick={handleNextAd} aria-label="Next banner">›</button>
+              <button type="button" className="promo-arrow" onClick={handleNextAd} aria-label="Next banner">›</button>
             </div>
           </div>
         </div>
