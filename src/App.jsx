@@ -12,6 +12,7 @@ function TopBar() {
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
+  const isAdmin = location.pathname.startsWith('/admin')
 
   const currentLang = languages.find((l) => l.code === lang) || languages[0]
 
@@ -31,7 +32,15 @@ function TopBar() {
           )}
           <img src="/logo.svg" alt="Orange Logo" className="logo-img" />
           <span className="brand-name">{SHOP.shortName || 'Orange'}</span>
-          <span className="brand-tag">SERVICES</span>
+          <button
+            type="button"
+            className={`brand-tag ${isAdmin ? 'brand-tag-admin' : 'brand-tag-user'}`}
+            onClick={() => navigate(isAdmin ? '/' : '/admin')}
+            title={isAdmin ? 'Switch to User Page' : 'Switch to Admin Page'}
+            aria-label={isAdmin ? 'Orange Admin (Click for User Page)' : 'Orange User (Click for Admin Page)'}
+          >
+            {isAdmin ? 'ADMIN' : 'USER'}
+          </button>
         </div>
         <button
           type="button"
@@ -93,7 +102,6 @@ function TopBar() {
 
 function BottomNav() {
   const { t } = useI18n()
-  const waUrl = `https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent('Hi Orange Refrigeration, I need service/repair for my appliance.')}`
 
   return (
     <nav className="bottomnav">
@@ -104,14 +112,6 @@ function BottomNav() {
       <NavLink to="/book" className="navitem navitem-primary">
         <span className="ico">🛠️</span>
         <span>{t('bookNow')}</span>
-      </NavLink>
-      <a href={waUrl} target="_blank" rel="noreferrer" className="navitem navitem-wa">
-        <span className="ico">💬</span>
-        <span>WhatsApp</span>
-      </a>
-      <NavLink to="/admin" className="navitem">
-        <span className="ico">🔒</span>
-        <span>{t('admin')}</span>
       </NavLink>
     </nav>
   )
