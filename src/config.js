@@ -4,9 +4,9 @@ export const SHOP = {
   shortName: 'Orange',
   proprietor: 'Manikanta',
   // Phone numbers from the business card. VERIFY these are correct.
-  phones: ['7287821424', '9490179923'],
+  phones: ['7287831424', '9490171029'],
   // WhatsApp number that receives booking requests (owner). Use full intl format without +.
-  whatsapp: '917287821424',
+  whatsapp: '917287831424',
   address: 'Athreya Street, Vikram College Road, Sullurupeta - 524121',
   mapsQuery: 'Vikram College Road, Sullurupeta 524121',
   brands: ['LG', 'Voltas', 'Daikin', 'Carrier', 'Samsung', 'Panasonic', 'Mitsubishi Electric', 'Hitachi'],

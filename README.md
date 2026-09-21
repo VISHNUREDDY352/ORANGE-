@@ -40,7 +40,7 @@ npm run preview    # preview the production build
 Edit `src/config.js`:
 
 - `SHOP.phones` — shop phone numbers (⚠️ **verify these against the card**)
-- `SHOP.whatsapp` — owner WhatsApp number in intl format, no `+` (e.g. `917287821424`)
+- `SHOP.whatsapp` — owner WhatsApp number in intl format, no `+` (e.g. `917287831424`)
 - `SHOP.address`, `SHOP.mapsQuery` — address + Google Maps search text
 - `ADMIN_PASSWORD` — **change this before sharing the app** (currently `orange@123`)
 - `TIME_SLOTS` — available booking time slots
