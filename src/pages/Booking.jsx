@@ -21,8 +21,6 @@ export default function Booking() {
   const location = useLocation()
   const navigate = useNavigate()
   const preset = location.state?.appliance || ''
-  const [couponCode, setCouponCode] = useState(location.state?.coupon || '')
-
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -30,7 +28,7 @@ export default function Booking() {
     appliance: preset,
     brand: '',
     customBrand: '',
-    issue: location.state?.coupon ? `[Offer Code: ${location.state.coupon} Applied]` : '',
+    issue: '',
     date: '',
     time: '',
   })
@@ -47,9 +45,6 @@ export default function Booking() {
         appliance: selectedAppliance,
         brand: availableBrands.includes(f.brand) ? f.brand : '',
       }))
-    }
-    if (location.state?.coupon) {
-      setCouponCode(location.state.coupon)
     }
   }, [location.state])
 
@@ -102,18 +97,6 @@ export default function Booking() {
     <div className="page">
       <h1 className="page-title">{t('booking')}</h1>
       
-      {couponCode && (
-        <div className="active-coupon-card">
-          <div className="acc-left">
-            <span className="acc-ico">🎉</span>
-            <div>
-              <div className="acc-title">{t('couponApplied')}</div>
-              <div className="acc-desc">Code: <strong>{couponCode}</strong> • Offer Applied</div>
-            </div>
-          </div>
-          <button type="button" className="acc-remove" onClick={() => setCouponCode('')}>✕</button>
-        </div>
-      )}
 
       <form className="form" onSubmit={handleSubmit} noValidate>
         <fieldset className="fieldset">

@@ -1,5 +1,14 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 
+export const LANGUAGES = [
+  { code: 'en', label: 'English', nativeName: 'English', short: 'ENG' },
+  { code: 'te', label: 'Telugu', nativeName: 'తెలుగు', short: 'తెలుగు' },
+  { code: 'hi', label: 'Hindi', nativeName: 'हिन्दी', short: 'हिन्दी' },
+  { code: 'ta', label: 'Tamil', nativeName: 'தமிழ்', short: 'தமிழ்' },
+  { code: 'kn', label: 'Kannada', nativeName: 'ಕನ್ನಡ', short: 'ಕನ್ನಡ' },
+  { code: 'ml', label: 'Malayalam', nativeName: 'മലയാളം', short: 'മലയാളം' },
+]
+
 const translations = {
   en: {
     // App / nav
@@ -9,12 +18,13 @@ const translations = {
     booking: 'Book a Service',
     admin: 'Admin',
     back: 'Back',
+    chooseLanguage: 'Choose Language',
 
     // Home
     proprietor: 'Proprietor',
     tagline: 'All types of AC, Washing Machine & Refrigerator services',
     ourServices: 'Our Services',
-    specialOffers: 'Special Offers',
+    specialOffers: 'Featured Services',
     brandsWeService: 'Brands We Service',
     call: 'Call',
     callNow: 'Call Now',
@@ -26,7 +36,7 @@ const translations = {
 
     // Appliances
     ac: 'Air Conditioner (AC)',
-    refrigerator: 'Refrigerator',
+    refrigerator: 'Refrigerator (Fridge)',
     washingMachine: 'Washing Machine',
 
     // Booking form
@@ -73,39 +83,43 @@ const translations = {
     for: 'For',
     at: 'at',
 
+    pending: 'Pending',
+    confirmed: 'Confirmed',
+    completed: 'Completed',
+    cancelled: 'Cancelled',
+
     // Banners
-    topTickerBanner: '🔥 Special Offer: Discount on AC & Appliance Servicing! • Free Inspection',
+    topTickerBanner: '🔥 Fast & Reliable AC & Appliance Servicing! • Free Inspection',
     brandsMarqueeTitle: 'Brands We Repair & Service',
-    trustWarrantyTitle: '6-Month Warranty',
-    trustWarrantyDesc: 'On genuine replacement spare parts',
+    trustWarrantyTitle: 'Genuine Spare Parts',
+    trustWarrantyDesc: '100% authentic replacement parts',
     trustExpressTitle: '45-Min Express',
     trustExpressDesc: 'Fast technician arrival at your home',
     trustExpertTitle: 'Certified Experts',
     trustExpertDesc: 'Trained & background verified engineers',
-    trustPriceTitle: 'Best Price Guarantee',
+    trustPriceTitle: 'Affordable Rates',
     trustPriceDesc: 'Transparent rates with zero hidden costs',
-    couponBannerTitle: 'FESTIVE DISCOUNT VOUCHER',
-    couponBannerDesc: 'Get Special Discount on your repair service today!',
-    couponCode: 'ORANGE100',
-    applyCoupon: 'Apply Discount',
-    couponApplied: 'Discount Offer Applied!',
     bookingAcceptedTitle: 'Booking Accepted! 🟢',
     bookingAcceptedDesc: 'Your service booking has been accepted & confirmed by Orange Services.',
     sendAcceptanceWa: 'Send WhatsApp Acceptance',
     notifyCustomer: 'Notify Customer',
   },
+
   te: {
+    // App / nav
     appName: 'ఆరెంజ్ రిఫ్రిజిరేషన్',
     home: 'హోమ్',
     bookNow: 'బుక్ చేయండి',
     booking: 'సర్వీస్ బుక్ చేయండి',
     admin: 'అడ్మిన్',
     back: 'వెనుకకు',
+    chooseLanguage: 'భాషను ఎంచుకోండి',
 
+    // Home
     proprietor: 'యజమాని',
     tagline: 'అన్ని రకాల ఏసీ, వాషింగ్ మెషిన్ & రిఫ్రిజిరేటర్ సర్వీసులు',
     ourServices: 'మా సేవలు',
-    specialOffers: 'ప్రత్యేక ఆఫర్లు',
+    specialOffers: 'ప్రముఖ సర్వీసులు',
     brandsWeService: 'మేము సర్వీస్ చేసే బ్రాండ్లు',
     call: 'కాల్',
     callNow: 'ఇప్పుడే కాల్ చేయండి',
@@ -115,10 +129,12 @@ const translations = {
     bookAService: 'సర్వీస్ బుక్ చేయండి',
     bookServiceDesc: 'మీ ఏసీ, ఫ్రిజ్ లేదా వాషింగ్ మెషిన్ కోసం రిపేర్ అభ్యర్థించండి',
 
+    // Appliances
     ac: 'ఎయిర్ కండిషనర్ (ఏసీ)',
     refrigerator: 'రిఫ్రిజిరేటర్ (ఫ్రిజ్)',
     washingMachine: 'వాషింగ్ మెషిన్',
 
+    // Booking form
     yourDetails: 'మీ వివరాలు',
     fullName: 'పూర్తి పేరు',
     phoneNumber: 'ఫోన్ నంబర్',
@@ -146,6 +162,7 @@ const translations = {
     required: 'ఈ ఫీల్డ్ అవసరం',
     invalidPhone: 'సరైన 10 అంకెల ఫోన్ నంబర్ నమోదు చేయండి',
 
+    // Admin
     adminLogin: 'అడ్మిన్ లాగిన్',
     password: 'పాస్‌వర్డ్',
     login: 'లాగిన్',
@@ -167,42 +184,431 @@ const translations = {
     cancelled: 'రద్దు చేయబడింది',
 
     // Banners
-    topTickerBanner: '🔥 ప్రత్యేక ఆఫర్: ఏసీ & హోమ్ అప్లయన్స్ సర్వీసింగ్‌పై ప్రత్యేక తగ్గింపు! • ఉచిత పరిశీలన',
+    topTickerBanner: '🔥 ప్రొఫెషనల్ ఏసీ & హోమ్ అప్లయన్స్ సర్వీసింగ్! • ఉచిత పరిశీలన',
     brandsMarqueeTitle: 'మేము రిపేర్ చేసే బ్రాండ్లు',
-    trustWarrantyTitle: '6-నెలల వారంటీ',
-    trustWarrantyDesc: 'ఒరిజినల్ స్పేర్ పార్టులపై హామీ',
+    trustWarrantyTitle: 'ఒరిజినల్ స్పేర్ పార్టులు',
+    trustWarrantyDesc: 'అధికారిక కంపెనీ విడిభాగాలు',
     trustExpressTitle: '45-నిమిషాల సర్వీస్',
     trustExpressDesc: 'మీ ఇంటి వద్దకే వేగవంతమైన టెక్నీషియన్',
     trustExpertTitle: 'సర్టిఫైడ్ టెక్నీషియన్లు',
     trustExpertDesc: 'అన్ని బ్రాండ్లలో శిక్షణ పొందిన నిపుణులు',
     trustPriceTitle: 'సరసమైన ధరలు',
     trustPriceDesc: 'ఎటువంటి దాగి ఉన్న చార్జీలు లేవు',
-    couponBannerTitle: 'పండుగ ఆఫర్ వోチャー',
-    couponBannerDesc: 'నేడే మీ రిపేర్ సర్వీస్‌పై ప్రత్యేక తగ్గింపు పొందండి!',
-    couponCode: 'ORANGE100',
-    applyCoupon: 'తగ్గింపు పొందండి',
-    couponApplied: 'ప్రత్యేక తగ్గింపు ఆఫర్ వర్తించబడింది!',
+    bookingAcceptedTitle: 'బుకింగ్ అంగీకరించబడింది! 🟢',
+    bookingAcceptedDesc: 'మీ సర్వీస్ బుకింగ్ Orange Services ద్వారా నిర్ధారించబడింది.',
+    sendAcceptanceWa: 'వాట్సాప్ ద్వారా నిర్ధారణ పంపండి',
+    notifyCustomer: 'కస్టమర్‌కు తెలియజేయండి',
+  },
+
+  hi: {
+    // App / nav
+    appName: 'ऑरेंज रेफ्रिजरेशन',
+    home: 'होम',
+    bookNow: 'बुक करें',
+    booking: 'सर्विस बुक करें',
+    admin: 'एडमिन',
+    back: 'वापस',
+    chooseLanguage: 'भाषा चुनें',
+
+    // Home
+    proprietor: 'प्रोप्राइटर',
+    tagline: 'सभी प्रकार के एसी, वाशिंग मशीन और रेफ्रिजरेटर की सर्विस',
+    ourServices: 'हमारी सेवाएं',
+    specialOffers: 'प्रमुख सेवाएं',
+    brandsWeService: 'ब्रांड्स जिनकी हम सर्विस करते हैं',
+    call: 'कॉल',
+    callNow: 'अभी कॉल करें',
+    directions: 'रास्ता देखें',
+    address: 'पता',
+    contact: 'संपर्क करें',
+    bookAService: 'सर्विस बुक करें',
+    bookServiceDesc: 'अपने एसी, फ्रिज या वाशिंग मशीन रिपेयर के लिए अनुरोध करें',
+
+    // Appliances
+    ac: 'एयर कंडीशनर (एसी)',
+    refrigerator: 'रेफ्रिजरेटर (फ्रिज)',
+    washingMachine: 'वाशिंग मशीन',
+
+    // Booking form
+    yourDetails: 'आपका विवरण',
+    fullName: 'पूरा नाम',
+    phoneNumber: 'फ़ोन नंबर',
+    fullAddress: 'पूरा पता',
+    applianceType: 'उपकरण का प्रकार',
+    selectService: 'सेवा चुनें',
+    selectedService: 'चुनी गई सेवा',
+    changeService: 'बदलें',
+    selectAppliance: 'उपकरण चुनें',
+    brandName: 'उपकरण का ब्रांड',
+    selectBrand: 'ब्रांड चुनें',
+    otherBrand: 'अन्य / सूची में नहीं',
+    specifyBrand: 'ब्रांड का नाम लिखें',
+    specifyBrandPlaceholder: 'उदा. ओ जनरल, टीसीएल, शार्प...',
+    issueDescription: 'समस्या बताएं',
+    issuePlaceholder: 'उदा. एसी कूलिंग नहीं कर रहा, पानी टपक रहा है...',
+    preferredDate: 'पसंदीदा तारीख',
+    preferredTime: 'पसंदीदा समय',
+    selectTime: 'समय चुनें',
+    submitBooking: 'बुकिंग अनुरोध भेजें',
+    sendWhatsApp: 'व्हाट्सएप पर भी भेजें',
+    bookingSuccess: 'बुकिंग अनुरोध सफलतापूर्वक भेजा गया!',
+    bookingSuccessDesc: 'हम आपकी अपॉइंटमेंट की पुष्टि के लिए जल्द ही आपसे संपर्क करेंगे।',
+    newBooking: 'दूसरी बुकिंग करें',
+    required: 'यह जानकारी आवश्यक है',
+    invalidPhone: 'मान्य 10-अंकों का फ़ोन नंबर दर्ज करें',
+
+    // Admin
+    adminLogin: 'एडमिन लॉगिन',
+    password: 'पासवर्ड',
+    login: 'लॉगिन',
+    logout: 'लॉगआउट',
+    wrongPassword: 'गलत पासवर्ड',
+    allBookings: 'सभी बुकिंग',
+    noBookings: 'अभी तक कोई बुकिंग नहीं है।',
+    filterStatus: 'स्थिति के अनुसार फ़िल्टर करें',
+    all: 'सभी',
+    status: 'स्थिति',
+    updateStatus: 'स्थिति अपडेट करें',
+    bookedOn: 'बुकिंग तारीख',
+    for: 'के लिए',
+    at: 'को',
+
+    pending: 'लंबित (Pending)',
+    confirmed: 'स्वीकृत (Confirmed)',
+    completed: 'पूर्ण (Completed)',
+    cancelled: 'रद्द (Cancelled)',
+
+    // Banners
+    topTickerBanner: '🔥 तेज़ और विश्वसनीय एसी व उपकरण सर्विसिंग! • निःशुल्क निरीक्षण',
+    brandsMarqueeTitle: 'ब्रांड्स जिनकी हम मरम्मत करते हैं',
+    trustWarrantyTitle: 'ओरिजिनल स्पेयर पार्ट्स',
+    trustWarrantyDesc: '100% असली व प्रमाणित पार्ट्स',
+    trustExpressTitle: '45-मिनट एक्सप्रेस',
+    trustExpressDesc: 'आपके घर पर त्वरित टेक्नीशियन सेवा',
+    trustExpertTitle: 'प्रमाणित विशेषज्ञ',
+    trustExpertDesc: 'अनुभवी एवं प्रशिक्षित टेक्नीशियन',
+    trustPriceTitle: 'किफायती दरें',
+    trustPriceDesc: 'स्पष्ट कीमतें बिना किसी छुपे शुल्क के',
+    bookingAcceptedTitle: 'बुकिंग स्वीकार कर ली गई! 🟢',
+    bookingAcceptedDesc: 'आपकी सर्विस बुकिंग Orange Services द्वारा स्वीकृत हो गई है।',
+    sendAcceptanceWa: 'व्हाट्सएप पर स्वीकृति भेजें',
+    notifyCustomer: 'ग्राहक को सूचित करें',
+  },
+
+  ta: {
+    // App / nav
+    appName: 'ஆரஞ்ச் ரெஃப்ரிஜிரேஷன்',
+    home: 'முகப்பு',
+    bookNow: 'புக் செய்க',
+    booking: 'சேவை முன்பதிவு',
+    admin: 'நிர்வாகம்',
+    back: 'பின்செல்',
+    chooseLanguage: 'மொழியைத் தேர்ந்தெடுக்கவும்',
+
+    // Home
+    proprietor: 'உரிமையாளர்',
+    tagline: 'அனைத்து வகை ஏசி, வாஷிங் மெஷின் & பிரிட்ஜ் பழுதுபார்த்தல் சேவைகள்',
+    ourServices: 'எங்கள் சேவைகள்',
+    specialOffers: 'முக்கிய சேவைகள்',
+    brandsWeService: 'நாங்கள் சேவை செய்யும் பிராண்டுகள்',
+    call: 'அழை',
+    callNow: 'இப்போதே அழைக்கவும்',
+    directions: 'வழித்தடம்',
+    address: 'முகவரி',
+    contact: 'தொடர்புக்கு',
+    bookAService: 'சேவை முன்பதிவு செய்ய',
+    bookServiceDesc: 'உங்கள் ஏசி, பிரிட்ஜ் அல்லது வாஷிங் மெஷினுக்கு பழுதுபார்க்க முன்பதிவு செய்யுங்கள்',
+
+    // Appliances
+    ac: 'ஏர் கண்டிஷனர் (ஏசி)',
+    refrigerator: 'ரெஃப்ரிஜிரேட்டர் (பிரிட்ஜ்)',
+    washingMachine: 'வாஷிங் மெஷின்',
+
+    // Booking form
+    yourDetails: 'உங்கள் விவரங்கள்',
+    fullName: 'முழு பெயர்',
+    phoneNumber: 'தொலைபேசி எண்',
+    fullAddress: 'முழு முகவரி',
+    applianceType: 'சாதன வகை',
+    selectService: 'சேவையைத் தேர்ந்தெடுக்கவும்',
+    selectedService: 'தேர்ந்தெடுக்கப்பட்ட சேவை',
+    changeService: 'மாற்று',
+    selectAppliance: 'சாதனத்தைத் தேர்ந்தெடுக்கவும்',
+    brandName: 'சாதனத்தின் பிராண்ட்',
+    selectBrand: 'பிராண்டைத் தேர்ந்தெடுக்கவும்',
+    otherBrand: 'மற்ற பிராண்ட் / பட்டியலில் இல்லை',
+    specifyBrand: 'பிராண்ட் பெயரை குறிப்பிடவும்',
+    specifyBrandPlaceholder: 'எ.கா. ஓ ஜெனரல், டிசிஎல், ஷார்ப்...',
+    issueDescription: 'பிரச்சினையை விவரிக்கவும்',
+    issuePlaceholder: 'எ.கா. குளிர்ச்சி இல்லை, தண்ணீர் கசிகிறது...',
+    preferredDate: 'விரும்பும் தேதி',
+    preferredTime: 'விரும்பும் நேரம்',
+    selectTime: 'நேரத்தைத் தேர்ந்தெடுக்கவும்',
+    submitBooking: 'முன்பதிவு சமர்ப்பிக்கவும்',
+    sendWhatsApp: 'வாட்ஸ்அப்பிலும் அனுப்பவும்',
+    bookingSuccess: 'முன்பதிவு கோரிக்கை வெற்றிகரமாக சமர்ப்பிக்கப்பட்டது!',
+    bookingSuccessDesc: 'உங்கள் முன்பதிவை உறுதிப்படுத்த விரைவில் உங்களை தொடர்புகொள்வோம்.',
+    newBooking: 'மற்றொரு முன்பதிவு செய்ய',
+    required: 'இந்த விவரம் தேவை',
+    invalidPhone: 'சரியான 10 இலக்க தொலைபேசி எண்ணை உள்ளிடவும்',
+
+    // Admin
+    adminLogin: 'நிர்வாக உள்நுழைவு',
+    password: 'கடவுச்சொல்',
+    login: 'உள்நுழைக',
+    logout: 'வெளியேறு',
+    wrongPassword: 'தவறான கடவுச்சொல்',
+    allBookings: 'அனைத்து முன்பதிவுகள்',
+    noBookings: 'முன்பதிவுகள் ஏதுமில்லை.',
+    filterStatus: 'நிலை மூலம் வடிகட்டவும்',
+    all: 'அனைத்தும்',
+    status: 'நிலை',
+    updateStatus: 'நிலையை மாற்றவும்',
+    bookedOn: 'முன்பதிவு செய்த தேதி',
+    for: 'இதற்காக',
+    at: 'நேரம்',
+
+    pending: 'நிலுவையில் (Pending)',
+    confirmed: 'உறுதிசெய்யப்பட்டது (Confirmed)',
+    completed: 'நிறைவடைந்தது (Completed)',
+    cancelled: 'ரத்துசெய்யப்பட்டது (Cancelled)',
+
+    // Banners
+    topTickerBanner: '🔥 வேகமான மற்றும் நம்பகமான ஏசி & சாதன பழுதுபார்த்தல்! • இலவச பரிசோதனை',
+    brandsMarqueeTitle: 'நாங்கள் பழுதுபார்க்கும் பிராண்டுகள்',
+    trustWarrantyTitle: 'அசல் உதிரிபாகங்கள்',
+    trustWarrantyDesc: '100% அசல் நிறுவன உதிரிபாகங்கள்',
+    trustExpressTitle: '45-நிமிட சேவை',
+    trustExpressDesc: 'உங்கள் இல்லத்திற்கே விரைவான தொழில்நுட்ப வல்லுநர்',
+    trustExpertTitle: 'சான்றளிக்கப்பட்ட நிபுணர்கள்',
+    trustExpertDesc: 'பயிற்சி பெற்ற அனுபவமிக்க வல்லுநர்கள்',
+    trustPriceTitle: 'நியாயமான கட்டணம்',
+    trustPriceDesc: 'மறைமுக கட்டணங்கள் இல்லாத வெளிப்படையான விலை',
+    bookingAcceptedTitle: 'முன்பதிவு ஏற்கப்பட்டது! 🟢',
+    bookingAcceptedDesc: 'உங்கள் முன்பதிவு Orange Services மூலம் உறுதி செய்யப்பட்டது.',
+    sendAcceptanceWa: 'வாட்ஸ்அப் உறுதிப்படுத்தல் அனுப்பவும்',
+    notifyCustomer: 'வாடிக்கையாளருக்கு தெரிவிக்கவும்',
+  },
+
+  kn: {
+    // App / nav
+    appName: 'ಆರೆಂಜ್ ರೆಫ್ರಿಜರೇಷನ್',
+    home: 'ಮುಖಪುಟ',
+    bookNow: 'ಬುಕ್ ಮಾಡಿ',
+    booking: 'ಸೇವೆ ಬುಕ್ ಮಾಡಿ',
+    admin: 'ಅಡ್ಮಿನ್',
+    back: 'ಹಿಂದೆ',
+    chooseLanguage: 'ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+
+    // Home
+    proprietor: 'ಮಾಲೀಕರು',
+    tagline: 'ಎಲ್ಲಾ ರೀತಿಯ ಎಸಿ, ವಾಷಿಂಗ್ ಮೆಷಿನ್ & ರೆಫ್ರಿಜರೇಟರ್ ರಿಪೇರಿ ಸೇವೆಗಳು',
+    ourServices: 'ನಮ್ಮ ಸೇವೆಗಳು',
+    specialOffers: 'ಪ್ರಮುಖ ಸೇವೆಗಳು',
+    brandsWeService: 'ನಾವು ರಿಪೇರಿ ಮಾಡುವ ಬ್ರ್ಯಾಂಡ್‌ಗಳು',
+    call: 'ಕರೆ',
+    callNow: 'ಈಗಲೇ ಕರೆ ಮಾಡಿ',
+    directions: 'ದಾರಿ ನೋಡಿ',
+    address: 'ವಿಳಾಸ',
+    contact: 'ಸಂಪರ್ಕಿಸಿ',
+    bookAService: 'ಸೇವೆ ಬುಕ್ ಮಾಡಿ',
+    bookServiceDesc: 'ನಿಮ್ಮ ಎಸಿ, ಫ್ರಿಡ್ಜ್ ಅಥವಾ ವಾಷಿಂಗ್ ಮೆಷಿನ್ ರಿಪೇರಿಗೆ ವಿನಂತಿಸಿ',
+
+    // Appliances
+    ac: 'ಏರ್ ಕಂಡಿಷನರ್ (ಎಸಿ)',
+    refrigerator: 'ರೆಫ್ರಿಜರೇಟರ್ (ಫ್ರಿಡ್ಜ್)',
+    washingMachine: 'ವಾಷಿಂಗ್ ಮೆಷಿನ್',
+
+    // Booking form
+    yourDetails: 'ನಿಮ್ಮ ವಿವರಗಳು',
+    fullName: 'ಪೂರ್ಣ ಹೆಸರು',
+    phoneNumber: 'ಫೋನ್ ಸಂಖ್ಯೆ',
+    fullAddress: 'ಪೂರ್ಣ ವಿಳಾಸ',
+    applianceType: 'ಉಪಕರಣದ ವಿಧ',
+    selectService: 'ಸೇವೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+    selectedService: 'ಆಯ್ಕೆಮಾಡಿದ ಸೇವೆ',
+    changeService: 'ಬದಲಾಯಿಸಿ',
+    selectAppliance: 'ಉಪಕರಣವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+    brandName: 'ಉಪಕರಣದ ಬ್ರ್ಯಾಂಡ್',
+    selectBrand: 'ಬ್ರ್ಯಾಂಡ್ ಆಯ್ಕೆಮಾಡಿ',
+    otherBrand: 'ಇತರ ಬ್ರ್ಯಾಂಡ್ / ಪಟ್ಟಿಯಲ್ಲಿಲ್ಲದ',
+    specifyBrand: 'ಬ್ರ್ಯಾಂಡ್ ಹೆಸರು ತಿಳಿಸಿ',
+    specifyBrandPlaceholder: 'ಉದಾ. ಒ ಜನರಲ್, ಟಿಸಿಎಲ್, ಶಾರ್ಪ್...',
+    issueDescription: 'ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ',
+    issuePlaceholder: 'ಉದಾ. ಎಸಿ ಕೂಲಿಂಗ್ ಆಗುತ್ತಿಲ್ಲ, ನೀರು ಸೋರುತ್ತಿದೆ...',
+    preferredDate: 'ಇಷ್ಟವಾದ ದಿನಾಂಕ',
+    preferredTime: 'ಇಷ್ಟವಾದ ಸಮಯ',
+    selectTime: 'ಸಮಯವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+    submitBooking: 'ಬುಕಿಂಗ್ ವಿನಂತಿ ಸಲ್ಲಿಸಿ',
+    sendWhatsApp: 'ವಾಟ್ಸಾಪ್ ಮೂಲಕವೂ ಕಳುಹಿಸಿ',
+    bookingSuccess: 'ಬುಕಿಂಗ್ ವಿನಂತಿ ಯಶಸ್ವಿಯಾಗಿ ಸಲ್ಲಿಕೆಯಾಗಿದೆ!',
+    bookingSuccessDesc: 'ನಿಮ್ಮ ಅಪಾಯಿಂಟ್‌ಮೆಂಟ್ ದೃಢೀಕರಿಸಲು ನಾವು ಶೀಘ್ರದಲ್ಲೇ ಸಂಪರ್ಕಿಸುತ್ತೇವೆ.',
+    newBooking: 'ಮತ್ತೊಂದು ಬುಕಿಂಗ್ ಮಾಡಿ',
+    required: 'ಈ ವಿವರ ಅಗತ್ಯವಿದೆ',
+    invalidPhone: 'ಸರಿಯಾದ 10 ಅಂಕಿಯ ಫೋನ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ',
+
+    // Admin
+    adminLogin: 'ಅಡ್ಮಿನ್ ಲಾಗಿನ್',
+    password: 'ಪಾಸ್‌ವರ್ಡ್',
+    login: 'ಲಾಗಿನ್',
+    logout: 'ಲಾಗೌಟ್',
+    wrongPassword: 'ತಪ್ಪು ಪಾಸ್‌ವರ್ಡ್',
+    allBookings: 'ಎಲ್ಲಾ ಬುಕಿಂಗ್‌ಗಳು',
+    noBookings: 'ಇನ್ನೂ ಯಾವುದೇ ಬುಕಿಂಗ್‌ಗಳಿಲ್ಲ.',
+    filterStatus: 'ಸ್ಥಿತಿಯ ಪ್ರಕಾರ ಫಿಲ್ಟರ್ ಮಾಡಿ',
+    all: 'ಎಲ್ಲಾ',
+    status: 'ಸ್ಥಿತಿ',
+    updateStatus: 'ಸ್ಥಿತಿ ನವೀಕರಿಸಿ',
+    bookedOn: 'ಬುಕ್ ಮಾಡಿದ ದಿನಾಂಕ',
+    for: 'ಯಾರಿಗೆ',
+    at: 'ಸಮಯ',
+
+    pending: 'ಬಾಕಿ (Pending)',
+    confirmed: 'ದೃಢೀಕರಿಸಲಾಗಿದೆ (Confirmed)',
+    completed: 'ಪೂರ್ಣಗೊಂಡಿದೆ (Completed)',
+    cancelled: 'ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ (Cancelled)',
+
+    // Banners
+    topTickerBanner: '🔥 ವೇಗದ ಮತ್ತು ವಿಶ್ವಾಸಾರ್ಹ ಎಸಿ & ಗೃಹೋಪಯೋಗಿ ಸೇವೆಗಳು! • ಉಚಿತ ತಪಾಸಣೆ',
+    brandsMarqueeTitle: 'ನಾವು ಸೇವೆ ಒದಗಿಸುವ ಬ್ರ್ಯಾಂಡ್‌ಗಳು',
+    trustWarrantyTitle: 'ಅಸಲಿ ಬಿಡಿಭಾಗಗಳು',
+    trustWarrantyDesc: '100% ಅಧಿಕೃತ ಮೂಲ ಬಿಡಿಭಾಗಗಳು',
+    trustExpressTitle: '45-ನಿಮಿಷಗಳ ಸೇವೆ',
+    trustExpressDesc: 'ನಿಮ್ಮ ಮನೆ ಬಾಗಿಲಿಗೆ ತ್ವರಿತ ತಂತ್ರಜ್ಞರ ಆಗಮನ',
+    trustExpertTitle: 'ಪ್ರಮಾಣೀಕೃತ ತಜ್ಞರು',
+    trustExpertDesc: 'ತರಬೇತಿ ಪಡೆದ ಅನುಭವಿ ಇಂಜಿನಿಯರ್‌ಗಳು',
+    trustPriceTitle: 'ಕೈಗೆಟುಕುವ ದರಗಳು',
+    trustPriceDesc: 'ಯಾವುದೇ ಗುಪ್ತ ಶುಲ್ಕಗಳಿಲ್ಲದ ಸ್ಪಷ್ಟ ದರಗಳು',
+    bookingAcceptedTitle: 'ಬುಕಿಂಗ್ ಸ್ವೀಕರಿಸಲಾಗಿದೆ! 🟢',
+    bookingAcceptedDesc: 'ನಿಮ್ಮ ಸೇವಾ ಬುಕಿಂಗ್ Orange Services ನಿಂದ ದೃಢೀಕರಿಸಲ್ಪಟ್ಟಿದೆ.',
+    sendAcceptanceWa: 'ವಾಟ್ಸಾಪ್ ದೃಢೀಕರಣ ಕಳುಹಿಸಿ',
+    notifyCustomer: 'ಗ್ರಾಹಕರಿಗೆ ತಿಳಿಸಿ',
+  },
+
+  ml: {
+    // App / nav
+    appName: 'ഓറഞ്ച് റഫ്രിജറേഷൻ',
+    home: 'ഹോം',
+    bookNow: 'ബുക്ക് ചെയ്യുക',
+    booking: 'സർവീസ് ബുക്ക് ചെയ്യുക',
+    admin: 'അഡ്മിൻ',
+    back: 'തിരികെ',
+    chooseLanguage: 'ഭാഷ തിരഞ്ഞെടുക്കുക',
+
+    // Home
+    proprietor: 'ഉടമസ്ഥൻ',
+    tagline: 'എല്ലാത്തരം എസി, വാഷിംഗ് മെഷീൻ & റഫ്രിജറേറ്റർ സർവീസുകൾ',
+    ourServices: 'ഞങ്ങളുടെ സേവനങ്ങൾ',
+    specialOffers: 'പ്രധാന സേവനങ്ങൾ',
+    brandsWeService: 'ഞങ്ങൾ സർവീസ് ചെയ്യുന്ന ബ്രാൻഡുകൾ',
+    call: 'കോൾ',
+    callNow: 'ഇപ്പോൾ വിളിക്കുക',
+    directions: 'വഴി അറിയുക',
+    address: 'വിലാസം',
+    contact: 'ബന്ധപ്പെടുക',
+    bookAService: 'സർവീസ് ബുക്ക് ചെയ്യുക',
+    bookServiceDesc: 'നിങ്ങളുടെ എസി, ഫ്രിഡ്ജ് അല്ലെങ്കിൽ വാഷിംഗ് മെഷീൻ റിപ്പയറിനായി ബുക്ക് ചെയ്യുക',
+
+    // Appliances
+    ac: 'എയർ കണ്ടീഷണർ (എസി)',
+    refrigerator: 'റഫ്രിജറേറ്റർ (ഫ്രിഡ്ജ്)',
+    washingMachine: 'വാഷിംഗ് മെഷീൻ',
+
+    // Booking form
+    yourDetails: 'നിങ്ങളുടെ വിവരങ്ങൾ',
+    fullName: 'പൂർണ്ണമായ പേര്',
+    phoneNumber: 'ഫോൺ നമ്പർ',
+    fullAddress: 'പൂർണ്ണ വിലാസം',
+    applianceType: 'ഉപകരണ തരം',
+    selectService: 'സർവീസ് തിരഞ്ഞെടുക്കുക',
+    selectedService: 'തിരഞ്ഞെടുത്ത സർവീസ്',
+    changeService: 'മാറ്റുക',
+    selectAppliance: 'ഉപകരണം തിരഞ്ഞെടുക്കുക',
+    brandName: 'ഉപകരണത്തിന്റെ ബ്രാൻഡ്',
+    selectBrand: 'ബ്രാൻഡ് തിരഞ്ഞെടുക്കുക',
+    otherBrand: 'മറ്റ് ബ്രാൻഡ് / ലിസ്റ്റിൽ ഇല്ലാത്തത്',
+    specifyBrand: 'ബ്രാൻഡ് പേര് വ്യക്തമാക്കുക',
+    specifyBrandPlaceholder: 'ഉദാ: ഒ ജനറൽ, ടിസിഎൽ, ഷാർപ്പ്...',
+    issueDescription: 'പ്രശ്നം വിശദീകരിക്കുക',
+    issuePlaceholder: 'ഉദാ: തണുപ്പ് കുറവാണ്, വെള്ളം ചോരുന്നു...',
+    preferredDate: 'തീയതി',
+    preferredTime: 'സമയം',
+    selectTime: 'സമയം തിരഞ്ഞെടുക്കുക',
+    submitBooking: 'ബുക്കിംഗ് അഭ്യർത്ഥന അയക്കുക',
+    sendWhatsApp: 'വാട്സ്ആപ്പിലും അയക്കുക',
+    bookingSuccess: 'ബുക്കിംഗ് വിജയകരമായി അയച്ചു!',
+    bookingSuccessDesc: 'നിങ്ങളുടെ അപ്പോയിന്റ്മെന്റ് സ്ഥിരീകരിക്കാൻ ഞങ്ങൾ ഉടൻ ബന്ധപ്പെടും.',
+    newBooking: 'മറ്റൊരു ബുക്കിംഗ് നടത്തുക',
+    required: 'ഈ വിവരം നിർബന്ധമാണ്',
+    invalidPhone: 'ശരിയായ 10 അക്ക ഫോൺ നമ്പർ നൽകുക',
+
+    // Admin
+    adminLogin: 'അഡ്മിൻ ലോഗിൻ',
+    password: 'പാസ്‌വേഡ്',
+    login: 'ലോഗിൻ',
+    logout: 'ലോഗൗട്ട്',
+    wrongPassword: 'തെറ്റായ പാസ്‌വേഡ്',
+    allBookings: 'എല്ലാ ബുക്കിംഗുകളും',
+    noBookings: 'ഇതുവരെ ബുക്കിംഗുകൾ ഒന്നുമില്ല.',
+    filterStatus: 'സ്റ്റാറ്റസ് അനുസരിച്ച് ഫിൽട്ടർ ചെയ്യുക',
+    all: 'എല്ലാം',
+    status: 'സ്റ്റാറ്റസ്',
+    updateStatus: 'സ്റ്റാറ്റസ് മാറ്റുക',
+    bookedOn: 'ബുക്ക് ചെയ്ത തീയതി',
+    for: 'ഇതിനായി',
+    at: 'സമയം',
+
+    pending: 'തീർച്ചപ്പെടാത്തത് (Pending)',
+    confirmed: 'സ്ഥിരീകരിച്ചു (Confirmed)',
+    completed: 'പൂർത്തിയായി (Completed)',
+    cancelled: 'റദ്ദാക്കി (Cancelled)',
+
+    // Banners
+    topTickerBanner: '🔥 വേഗമേറിയതും വിശ്വസനീയവുമായ എസി & അപ്ലയൻസ് സർവീസിംഗ്! • സൗജന്യ പരിശോധന',
+    brandsMarqueeTitle: 'ഞങ്ങൾ റിപ്പയർ ചെയ്യുന്ന ബ്രാൻഡുകൾ',
+    trustWarrantyTitle: 'ഒറിജിനൽ സ്പെയർ പാർട്സുകൾ',
+    trustWarrantyDesc: '100% യഥാർത്ഥ കമ്പനി ഘടകങ്ങൾ',
+    trustExpressTitle: '45-മിനിറ്റ് സർവീസ്',
+    trustExpressDesc: 'നിങ്ങളുടെ വീട്ടിലെത്തുന്ന വേഗമേറിയ ടെക്നീഷ്യൻ',
+    trustExpertTitle: 'പരിശീലനം ലഭിച്ച വിദഗ്ദ്ധർ',
+    trustExpertDesc: 'പരിചയസമ്പന്നരായ സാങ്കേതിക വിദഗ്ദ്ധർ',
+    trustPriceTitle: 'ന്യായമായ നിരക്കുകൾ',
+    trustPriceDesc: 'മറഞ്ഞിരിക്കുന്ന ചാർജുകളില്ലാത്ത സുതാര്യമായ നിരക്ക്',
+    bookingAcceptedTitle: 'ബുക്കിംഗ് സ്വീകരിച്ചു! 🟢',
+    bookingAcceptedDesc: 'നിങ്ങളുടെ സർവീസ് ബുക്കിംഗ് Orange Services വഴി സ്ഥിരീകരിച്ചു.',
+    sendAcceptanceWa: 'വാട്സ്ആപ്പ് വഴി അറിയിക്കുക',
+    notifyCustomer: 'ഉപഭോക്താവിനെ അറിയിക്കുക',
   },
 }
 
 const LanguageContext = createContext(null)
 
 export function LanguageProvider({ children }) {
-  const [lang, setLang] = useState(() => localStorage.getItem('lang') || 'en')
+  const [lang, setLang] = useState(() => {
+    const saved = localStorage.getItem('lang')
+    return translations[saved] ? saved : 'en'
+  })
 
   const changeLang = useCallback((l) => {
-    setLang(l)
-    localStorage.setItem('lang', l)
+    if (translations[l]) {
+      setLang(l)
+      localStorage.setItem('lang', l)
+    }
   }, [])
 
   const toggleLang = useCallback(() => {
-    changeLang(lang === 'en' ? 'te' : 'en')
+    const idx = LANGUAGES.findIndex((l) => l.code === lang)
+    const nextIdx = (idx + 1) % LANGUAGES.length
+    changeLang(LANGUAGES[nextIdx].code)
   }, [lang, changeLang])
 
-  const t = useCallback((key) => translations[lang][key] ?? translations.en[key] ?? key, [lang])
+  const t = useCallback((key) => {
+    const current = translations[lang] || translations.en
+    return current[key] ?? translations.en[key] ?? key
+  }, [lang])
 
   return (
-    <LanguageContext.Provider value={{ lang, t, changeLang, toggleLang }}>
+    <LanguageContext.Provider value={{ lang, t, changeLang, toggleLang, languages: LANGUAGES }}>
       {children}
     </LanguageContext.Provider>
   )
