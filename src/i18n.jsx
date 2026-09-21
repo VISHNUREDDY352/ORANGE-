@@ -31,6 +31,8 @@ const translations = {
     directions: 'Directions',
     address: 'Address',
     contact: 'Contact',
+    chatOnWhatsApp: 'Chat on WhatsApp',
+    whatsappNumber: 'WhatsApp Number',
     bookAService: 'Book a Service',
     bookServiceDesc: 'Request repair for your AC, fridge or washing machine',
 
@@ -126,6 +128,8 @@ const translations = {
     directions: 'దారి చూపించు',
     address: 'చిరునామా',
     contact: 'సంప్రదించండి',
+    chatOnWhatsApp: 'వాట్సాప్‌లో చాట్ చేయండి',
+    whatsappNumber: 'వాట్సాప్ నంబర్',
     bookAService: 'సర్వీస్ బుక్ చేయండి',
     bookServiceDesc: 'మీ ఏసీ, ఫ్రిజ్ లేదా వాషింగ్ మెషిన్ కోసం రిపేర్ అభ్యర్థించండి',
 
@@ -221,6 +225,8 @@ const translations = {
     directions: 'रास्ता देखें',
     address: 'पता',
     contact: 'संपर्क करें',
+    chatOnWhatsApp: 'व्हाट्सएप पर चैट करें',
+    whatsappNumber: 'व्हाट्सएप नंबर',
     bookAService: 'सर्विस बुक करें',
     bookServiceDesc: 'अपने एसी, फ्रिज या वाशिंग मशीन रिपेयर के लिए अनुरोध करें',
 
@@ -316,6 +322,8 @@ const translations = {
     directions: 'வழித்தடம்',
     address: 'முகவரி',
     contact: 'தொடர்புக்கு',
+    chatOnWhatsApp: 'வாட்ஸ்அப்பில் பேச',
+    whatsappNumber: 'வாட்ஸ்அப் எண்',
     bookAService: 'சேவை முன்பதிவு செய்ய',
     bookServiceDesc: 'உங்கள் ஏசி, பிரிட்ஜ் அல்லது வாஷிங் மெஷினுக்கு பழுதுபார்க்க முன்பதிவு செய்யுங்கள்',
 
@@ -411,6 +419,8 @@ const translations = {
     directions: 'ದಾರಿ ನೋಡಿ',
     address: 'ವಿಳಾಸ',
     contact: 'ಸಂಪರ್ಕಿಸಿ',
+    chatOnWhatsApp: 'ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಚಾಟ್ ಮಾಡಿ',
+    whatsappNumber: 'ವಾಟ್ಸಾಪ್ ಸಂಖ್ಯೆ',
     bookAService: 'ಸೇವೆ ಬುಕ್ ಮಾಡಿ',
     bookServiceDesc: 'ನಿಮ್ಮ ಎಸಿ, ಫ್ರಿಡ್ಜ್ ಅಥವಾ ವಾಷಿಂಗ್ ಮೆಷಿನ್ ರಿಪೇರಿಗೆ ವಿನಂತಿಸಿ',
 
@@ -506,6 +516,8 @@ const translations = {
     directions: 'വഴി അറിയുക',
     address: 'വിലാസം',
     contact: 'ബന്ധപ്പെടുക',
+    chatOnWhatsApp: 'വാട്സ്ആപ്പിൽ ചാറ്റ് ചെയ്യുക',
+    whatsappNumber: 'വാട്സ്ആപ്പ് നമ്പർ',
     bookAService: 'സർവീസ് ബുക്ക് ചെയ്യുക',
     bookServiceDesc: 'നിങ്ങളുടെ എസി, ഫ്രിഡ്ജ് അല്ലെങ്കിൽ വാഷിംഗ് മെഷീൻ റിപ്പയറിനായി ബുക്ക് ചെയ്യുക',
 

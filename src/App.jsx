@@ -93,6 +93,8 @@ function TopBar() {
 
 function BottomNav() {
   const { t } = useI18n()
+  const waUrl = `https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent('Hi Orange Refrigeration, I need service/repair for my appliance.')}`
+
   return (
     <nav className="bottomnav">
       <NavLink to="/" end className="navitem">
@@ -103,6 +105,10 @@ function BottomNav() {
         <span className="ico">🛠️</span>
         <span>{t('bookNow')}</span>
       </NavLink>
+      <a href={waUrl} target="_blank" rel="noreferrer" className="navitem navitem-wa">
+        <span className="ico">💬</span>
+        <span>WhatsApp</span>
+      </a>
       <NavLink to="/admin" className="navitem">
         <span className="ico">🔒</span>
         <span>{t('admin')}</span>

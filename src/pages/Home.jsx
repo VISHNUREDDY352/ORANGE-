@@ -245,7 +245,38 @@ export default function Home() {
             <span className="contact-ico">📍</span>
             <span className="contact-address-text">{SHOP.address}</span>
           </div>
-          <div className="btn-row" style={{ marginTop: '12px' }}>
+
+          <div className="contact-details-list">
+            <div className="contact-item-row">
+              <span className="contact-item-label">📞 {t('phoneNumber')}:</span>
+              <span className="contact-item-val">
+                <a href={`tel:${SHOP.phones[0]}`}>{SHOP.phones[0]}</a>, <a href={`tel:${SHOP.phones[1]}`}>{SHOP.phones[1]}</a>
+              </span>
+            </div>
+            <div className="contact-item-row">
+              <span className="contact-item-label">💬 WhatsApp:</span>
+              <a
+                className="contact-item-val wa-link"
+                href={`https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent('Hi Orange Refrigeration, I need service/repair for my appliance.')}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                +{SHOP.whatsapp.slice(0, 2)} {SHOP.whatsapp.slice(2)}
+              </a>
+            </div>
+          </div>
+
+          <a
+            className="btn btn-whatsapp btn-block"
+            style={{ marginTop: '14px' }}
+            href={`https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent('Hi Orange Refrigeration, I need service/repair for my appliance.')}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span style={{ fontSize: '18px' }}>💬</span> {t('chatOnWhatsApp')} ({SHOP.phones[0]})
+          </a>
+
+          <div className="btn-row" style={{ marginTop: '8px' }}>
             <a className="btn btn-primary" href={`tel:${SHOP.phones[0]}`}>📞 {t('callNow')}</a>
             <a className="btn btn-outline" href={mapsUrl} target="_blank" rel="noreferrer">🧭 {t('directions')}</a>
           </div>
