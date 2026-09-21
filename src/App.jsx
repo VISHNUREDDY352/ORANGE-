@@ -162,6 +162,11 @@ function TopBar() {
 
 function BottomNav() {
   const { t } = useI18n()
+  const location = useLocation()
+  const isAdmin = location.pathname.startsWith('/admin')
+
+  // Hide customer bottom navigation on the Admin portal
+  if (isAdmin) return null
 
   return (
     <nav className="bottomnav">
@@ -178,10 +183,13 @@ function BottomNav() {
 }
 
 export default function App() {
+  const location = useLocation()
+  const isAdmin = location.pathname.startsWith('/admin')
+
   return (
     <div className="app">
       <TopBar />
-      <main className="content">
+      <main className={`content ${isAdmin ? 'content-admin' : ''}`}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/book" element={<Booking />} />

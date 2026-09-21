@@ -427,6 +427,9 @@ body {
   width: 100%;
   padding-bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px));
 }
+.content-admin {
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
 .page { padding: 16px; }
 .center-page { min-height: 60vh; display: flex; align-items: center; justify-content: center; }
 .page-header {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 import { ADMIN_PASSWORD, BOOKING_STATUSES } from '../config.js'
 import {
@@ -476,6 +477,7 @@ function OffersManager() {
 
 function Dashboard({ onLogout }) {
   const { t } = useI18n()
+  const navigate = useNavigate()
   const bookings = useBookings()
   const offers = useOffers()
   const [activeTab, setActiveTab] = useState('bookings')
@@ -488,7 +490,10 @@ function Dashboard({ onLogout }) {
     <div className="page">
       <div className="admin-head">
         <h1 className="page-title">{t('admin')}</h1>
-        <button className="btn btn-outline btn-sm" onClick={onLogout}>{t('logout')}</button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button type="button" className="btn btn-outline btn-sm" onClick={() => navigate('/')}>🏠 User View</button>
+          <button type="button" className="btn btn-outline btn-sm" onClick={onLogout}>{t('logout')}</button>
+        </div>
       </div>
 
       {/* Admin Tab Switcher */}
