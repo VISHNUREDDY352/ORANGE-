@@ -9,6 +9,7 @@ import Admin from './pages/Admin.jsx'
 function TopBar() {
   const { t, lang, changeLang, languages } = useI18n()
   const [showLangModal, setShowLangModal] = useState(false)
+  const [showPortalModal, setShowPortalModal] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const isHome = location.pathname === '/'
@@ -35,9 +36,9 @@ function TopBar() {
           <button
             type="button"
             className={`brand-tag ${isAdmin ? 'brand-tag-admin' : 'brand-tag-user'}`}
-            onClick={() => navigate(isAdmin ? '/' : '/admin')}
-            title={isAdmin ? 'Switch to User Page' : 'Switch to Admin Page'}
-            aria-label={isAdmin ? 'Orange Admin (Click for User Page)' : 'Orange User (Click for Admin Page)'}
+            onClick={() => setShowPortalModal(true)}
+            title={t('selectPortal')}
+            aria-label={t('selectPortal')}
           >
             <span>{isAdmin ? 'ADMIN' : 'USER'}</span>
             <span className="brand-tag-arrow">▾</span>
@@ -52,6 +53,64 @@ function TopBar() {
           🌐 {currentLang.short} ▾
         </button>
       </header>
+
+      {/* Portal / Mode Selection Popup Modal */}
+      {showPortalModal && (
+        <div className="lang-modal-overlay" onClick={() => setShowPortalModal(false)}>
+          <div className="role-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="lang-modal-head">
+              <h3>👥 {t('selectPortal')}</h3>
+              <button
+                type="button"
+                className="lang-modal-close"
+                onClick={() => setShowPortalModal(false)}
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="role-options-list">
+              <button
+                type="button"
+                className={`role-option-card ${!isAdmin ? 'active' : ''}`}
+                onClick={() => {
+                  navigate('/')
+                  setShowPortalModal(false)
+                }}
+              >
+                <div className="role-opt-ico role-ico-user">👤</div>
+                <div className="role-opt-info">
+                  <div className="role-opt-title-row">
+                    <span className="role-opt-title">{t('userPage')}</span>
+                    {!isAdmin && <span className="role-active-badge">Active</span>}
+                  </div>
+                  <span className="role-opt-desc">{t('userDesc')}</span>
+                </div>
+                {!isAdmin ? <span className="role-opt-check">✓</span> : <span className="role-opt-arrow">→</span>}
+              </button>
+
+              <button
+                type="button"
+                className={`role-option-card ${isAdmin ? 'active' : ''}`}
+                onClick={() => {
+                  navigate('/admin')
+                  setShowPortalModal(false)
+                }}
+              >
+                <div className="role-opt-ico role-ico-admin">🔒</div>
+                <div className="role-opt-info">
+                  <div className="role-opt-title-row">
+                    <span className="role-opt-title">{t('adminPage')}</span>
+                    {isAdmin && <span className="role-active-badge">Active</span>}
+                  </div>
+                  <span className="role-opt-desc">{t('adminDesc')}</span>
+                </div>
+                {isAdmin ? <span className="role-opt-check">✓</span> : <span className="role-opt-arrow">→</span>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showLangModal && (
         <div className="lang-modal-overlay" onClick={() => setShowLangModal(false)}>

@@ -19,6 +19,11 @@ const translations = {
     admin: 'Admin',
     back: 'Back',
     chooseLanguage: 'Choose Language',
+    selectPortal: 'Select Portal',
+    userPage: 'User Page',
+    adminPage: 'Admin Page',
+    userDesc: 'Customer view & instant booking',
+    adminDesc: 'Staff login & booking management',
 
     // Home
     proprietor: 'Proprietor',
@@ -116,6 +121,11 @@ const translations = {
     admin: 'అడ్మిన్',
     back: 'వెనుకకు',
     chooseLanguage: 'భాషను ఎంచుకోండి',
+    selectPortal: 'పోర్టల్ ఎంచుకోండి',
+    userPage: 'యూజర్ పేజీ (కస్టమర్)',
+    adminPage: 'అడ్మిన్ పేజీ',
+    userDesc: 'కస్టమర్ సేవలు & బుకింగ్',
+    adminDesc: 'స్టాఫ్ లాగిన్ & బుకింగ్స్ నిర్వహణ',
 
     // Home
     proprietor: 'యజమాని',
@@ -213,6 +223,11 @@ const translations = {
     admin: 'एडमिन',
     back: 'वापस',
     chooseLanguage: 'भाषा चुनें',
+    selectPortal: 'पोर्टल चुनें',
+    userPage: 'यूजर पेज (ग्राहक)',
+    adminPage: 'एडमिन पेज',
+    userDesc: 'ग्राहक सेवाएँ और बुकिंग',
+    adminDesc: 'स्टाफ लॉगिन और बुकिंग प्रबंधन',
 
     // Home
     proprietor: 'प्रोप्राइटर',
@@ -310,6 +325,11 @@ const translations = {
     admin: 'நிர்வாகம்',
     back: 'பின்செல்',
     chooseLanguage: 'மொழியைத் தேர்ந்தெடுக்கவும்',
+    selectPortal: 'பக்கத்தைத் தேர்ந்தெடுக்கவும்',
+    userPage: 'பயனர் பக்கம்',
+    adminPage: 'நிர்வாகி பக்கம்',
+    userDesc: 'வாடிக்கையாளர் முன்பதிவு',
+    adminDesc: 'நிர்வாக உள்நுழைவு',
 
     // Home
     proprietor: 'உரிமையாளர்',
@@ -407,6 +427,11 @@ const translations = {
     admin: 'ಅಡ್ಮಿನ್',
     back: 'ಹಿಂದೆ',
     chooseLanguage: 'ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+    selectPortal: 'ಪೋರ್ಟಲ್ ಆಯ್ಕೆಮಾಡಿ',
+    userPage: 'ಬಳಕೆದಾರರ ಪುಟ',
+    adminPage: 'ನಿರ್ವಾಹಕರ ಪುಟ',
+    userDesc: 'ಗ್ರಾಹಕರ ಸೇವೆಗಳು ಮತ್ತು ಬುಕಿಂಗ್',
+    adminDesc: 'ಸಿಬ್ಬಂದಿ ಲಾಗಿನ್ ಮತ್ತು ನಿರ್ವಹಣೆ',
 
     // Home
     proprietor: 'ಮಾಲೀಕರು',
@@ -504,6 +529,11 @@ const translations = {
     admin: 'അഡ്മിൻ',
     back: 'തിരികെ',
     chooseLanguage: 'ഭാഷ തിരഞ്ഞെടുക്കുക',
+    selectPortal: 'പോർട്ടൽ തിരഞ്ഞെടുക്കുക',
+    userPage: 'ഉപയോക്തൃ പേജ്',
+    adminPage: 'അഡ്മിൻ പേജ്',
+    userDesc: 'ഉപഭോക്തൃ ബുക്കിംഗ്',
+    adminDesc: 'സ്റ്റാഫ് ലോഗിൻ & മാനേജ്മെന്റ്',
 
     // Home
     proprietor: 'ഉടമസ്ഥൻ',
