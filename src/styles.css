@@ -713,14 +713,34 @@ body {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 16px 8px;
+  padding: 12px 6px 14px;
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   cursor: pointer;
-  transition: transform .08s;
+  transition: all .15s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
 }
 .service-card:active { transform: scale(.96); }
-.service-ico { font-size: 30px; }
-.service-name { font-size: 12.5px; font-weight: 600; text-align: center; line-height: 1.2; }
+.service-img-wrap {
+  width: 68px;
+  height: 68px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.service-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .2s ease;
+}
+.service-card:hover .service-img {
+  transform: scale(1.05);
+}
+.service-name { font-size: 12px; font-weight: 700; text-align: center; line-height: 1.25; color: var(--ink); }
 
 /* Booking Service Selector Cards */
 .service-select-grid {
@@ -733,7 +753,7 @@ body {
   background: var(--white);
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
-  padding: 14px 6px;
+  padding: 10px 6px 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -749,8 +769,23 @@ body {
   border-color: var(--orange);
   box-shadow: 0 0 0 1px var(--orange);
 }
-.ss-ico { font-size: 26px; }
-.ss-name { font-size: 12px; font-weight: 700; text-align: center; color: var(--ink); line-height: 1.2; }
+.ss-img-wrap {
+  width: 54px;
+  height: 54px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ss-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ss-name { font-size: 11.5px; font-weight: 700; text-align: center; color: var(--ink); line-height: 1.2; }
 .service-select-btn.active .ss-name { color: var(--orange-dark); }
 
 /* Selected Service Banner */
@@ -761,15 +796,20 @@ body {
   background: var(--orange-light);
   border: 1.5px solid #ffd9c2;
   border-radius: var(--radius);
-  padding: 12px 14px;
+  padding: 10px 14px;
 }
 .ssb-info {
   display: flex;
   align-items: center;
   gap: 12px;
 }
-.ssb-ico {
-  font-size: 28px;
+.ssb-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1.5px solid #ffd9c2;
+  background: #fff;
 }
 .ssb-label {
   font-size: 11px;

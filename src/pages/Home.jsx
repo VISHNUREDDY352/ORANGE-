@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
-import { SHOP, APPLIANCE_KEYS } from '../config.js'
+import { SHOP, APPLIANCE_KEYS, APPLIANCE_IMAGES } from '../config.js'
 import { getBookings, subscribe } from '../store.js'
 
 const APPLIANCE_ICONS = {
@@ -196,7 +196,9 @@ export default function Home() {
         <div className="service-grid">
           {APPLIANCE_KEYS.map((k) => (
             <button key={k} className="service-card" onClick={() => navigate('/book', { state: { appliance: k } })}>
-              <span className="service-ico">{APPLIANCE_ICONS[k]}</span>
+              <div className="service-img-wrap">
+                <img src={APPLIANCE_IMAGES[k]} alt={t(k)} className="service-img" loading="lazy" />
+              </div>
               <span className="service-name">{t(k)}</span>
             </button>
           ))}

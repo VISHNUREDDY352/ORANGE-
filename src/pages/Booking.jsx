@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
-import { SHOP, APPLIANCE_KEYS, APPLIANCE_BRANDS, TIME_SLOTS } from '../config.js'
+import { SHOP, APPLIANCE_KEYS, APPLIANCE_BRANDS, TIME_SLOTS, APPLIANCE_IMAGES } from '../config.js'
 import { addBooking } from '../store.js'
 
 const APPLIANCE_ICONS = {
@@ -127,7 +127,7 @@ export default function Booking() {
           {form.appliance ? (
             <div className="selected-service-banner">
               <div className="ssb-info">
-                <span className="ssb-ico">{APPLIANCE_ICONS[form.appliance]}</span>
+                <img src={APPLIANCE_IMAGES[form.appliance]} alt={t(form.appliance)} className="ssb-img" />
                 <div>
                   <div className="ssb-label">{t('selectedService')}</div>
                   <div className="ssb-name">{t(form.appliance)}</div>
@@ -155,7 +155,9 @@ export default function Booking() {
                       setErrors((e) => ({ ...e, appliance: null, brand: null }))
                     }}
                   >
-                    <span className="ss-ico">{APPLIANCE_ICONS[k]}</span>
+                    <div className="ss-img-wrap">
+                      <img src={APPLIANCE_IMAGES[k]} alt={t(k)} className="ss-img" loading="lazy" />
+                    </div>
                     <span className="ss-name">{t(k)}</span>
                   </button>
                 ))}

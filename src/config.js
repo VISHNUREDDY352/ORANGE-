@@ -18,6 +18,13 @@ export const ADMIN_PASSWORD = 'Mani@123'
 // Appliance types offered
 export const APPLIANCE_KEYS = ['ac', 'refrigerator', 'washingMachine']
 
+// Service photos
+export const APPLIANCE_IMAGES = {
+  ac: '/service-ac.jpg',
+  refrigerator: '/service-fridge.jpg',
+  washingMachine: '/service-washing.jpg',
+}
+
 // Service-specific brand mapping
 export const APPLIANCE_BRANDS = {
   ac: ['LG', 'Voltas', 'Daikin', 'Carrier', 'Blue Star', 'Hitachi', 'Mitsubishi Electric', 'Panasonic', 'Samsung', 'Lloyd', 'Godrej'],
