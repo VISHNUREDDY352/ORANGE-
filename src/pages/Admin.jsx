@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 import { SHOP, ADMIN_PASSWORD, BOOKING_STATUSES } from '../config.js'
@@ -497,6 +497,44 @@ function OffersManager() {
   )
 }
 
+// Pleasant Web Audio notification chime (E-Major arpeggio)
+export function playNotificationSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext
+    if (!AudioCtx) return
+    const ctx = new AudioCtx()
+    if (ctx.state === 'suspended') {
+      ctx.resume()
+    }
+    const now = ctx.currentTime
+    const notes = [
+      { freq: 659.25, time: 0.00, dur: 0.35, gain: 0.35 },
+      { freq: 830.61, time: 0.14, dur: 0.35, gain: 0.35 },
+      { freq: 987.77, time: 0.28, dur: 0.70, gain: 0.45 },
+    ]
+
+    notes.forEach(({ freq, time, dur, gain }) => {
+      const osc = ctx.createOscillator()
+      const gainNode = ctx.createGain()
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, now + time)
+
+      gainNode.gain.setValueAtTime(0.0001, now + time)
+      gainNode.gain.exponentialRampToValueAtTime(gain, now + time + 0.03)
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + time + dur)
+
+      osc.connect(gainNode)
+      gainNode.connect(ctx.destination)
+
+      osc.start(now + time)
+      osc.stop(now + time + dur)
+    })
+  } catch (err) {
+    console.warn('Audio playback error:', err)
+  }
+}
+
 function Dashboard({ onLogout }) {
   const { t } = useI18n()
   const navigate = useNavigate()
@@ -505,6 +543,60 @@ function Dashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState('bookings')
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    try {
+      return localStorage.getItem('admin_sound_enabled') !== 'false'
+    } catch {
+      return true
+    }
+  })
+  const [newBookingAlert, setNewBookingAlert] = useState(null)
+  const lastBookingIdsRef = useRef(null)
+
+  const toggleSound = () => {
+    const next = !soundEnabled
+    setSoundEnabled(next)
+    try {
+      localStorage.setItem('admin_sound_enabled', String(next))
+    } catch {}
+    if (next) {
+      playNotificationSound()
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission()
+      }
+    }
+  }
+
+  // Detect newly received bookings and trigger notification sound
+  useEffect(() => {
+    if (lastBookingIdsRef.current === null) {
+      // First render: record existing booking IDs without alarming
+      lastBookingIdsRef.current = new Set(bookings.map((b) => b.id))
+      return
+    }
+
+    // Find any new booking that wasn't previously known
+    const newItems = bookings.filter((b) => !lastBookingIdsRef.current.has(b.id))
+    if (newItems.length > 0) {
+      const latest = newItems[0]
+      if (soundEnabled) {
+        playNotificationSound()
+      }
+      setNewBookingAlert(latest)
+
+      // Native browser notification if available
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+        try {
+          new Notification('🔔 New Service Booking Received!', {
+            body: `${latest.name} (${latest.phone}) booked ${t(latest.appliance)} for ${latest.date} at ${latest.time}`,
+            icon: '/logo.png',
+          })
+        } catch {}
+      }
+    }
+
+    lastBookingIdsRef.current = new Set(bookings.map((b) => b.id))
+  }, [bookings, soundEnabled, t])
 
   const stats = {
     total: bookings.length,
@@ -534,11 +626,56 @@ function Dashboard({ onLogout }) {
     <div className="page">
       <div className="admin-head">
         <h1 className="page-title">{t('admin')}</h1>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button
+            type="button"
+            className={`btn btn-sm ${soundEnabled ? 'btn-sound-on' : 'btn-sound-off'}`}
+            onClick={toggleSound}
+            title={soundEnabled ? 'Notification chime is ON. Click to mute.' : 'Notification chime is MUTED. Click to enable.'}
+          >
+            {soundEnabled ? '🔔 Sound: ON' : '🔕 Sound: OFF'}
+          </button>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => navigate('/')}>🏠 User View</button>
           <button type="button" className="btn btn-outline btn-sm" onClick={onLogout}>{t('logout')}</button>
         </div>
       </div>
+
+      {/* New Booking Alert Banner */}
+      {newBookingAlert && (
+        <div className="admin-alert-banner">
+          <div className="aab-left">
+            <span className="aab-ico">🔔</span>
+            <div>
+              <div className="aab-title">New Booking Received! — {newBookingAlert.name}</div>
+              <div className="aab-desc">
+                {t(newBookingAlert.appliance)} • {newBookingAlert.date} ({newBookingAlert.time}) • 📞 {newBookingAlert.phone}
+              </div>
+            </div>
+          </div>
+          <div className="aab-actions">
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => {
+                setSearch(newBookingAlert.id)
+                setActiveTab('bookings')
+                setNewBookingAlert(null)
+              }}
+            >
+              View
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm"
+              style={{ background: 'none', border: 'none', fontSize: '16px', cursor: 'pointer', color: '#92400e' }}
+              onClick={() => setNewBookingAlert(null)}
+              aria-label="Dismiss alert"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Quick Statistics Bar */}
       <div className="admin-stats-grid">

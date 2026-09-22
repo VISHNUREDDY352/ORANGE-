@@ -1154,7 +1154,66 @@ body {
 .login-card .field { width: 100%; }
 
 /* Admin */
-.admin-head { display: flex; align-items: center; justify-content: space-between; }
+.admin-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.btn-sound-on {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+  font-weight: 700;
+}
+.btn-sound-off {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  font-weight: 700;
+}
+.admin-alert-banner {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 1.5px solid #f59e0b;
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.18);
+  animation: pulse-glow-amber 2s infinite ease-in-out;
+}
+@keyframes pulse-glow-amber {
+  0%, 100% { box-shadow: 0 4px 14px rgba(245, 158, 11, 0.18); }
+  50% { box-shadow: 0 4px 22px rgba(245, 158, 11, 0.35); }
+}
+.aab-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.aab-ico {
+  font-size: 26px;
+  animation: bell-ring 1s ease-in-out 3;
+}
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0); }
+  20%, 60% { transform: rotate(15deg); }
+  40%, 80% { transform: rotate(-15deg); }
+}
+.aab-title {
+  font-size: 13.5px;
+  font-weight: 900;
+  color: #92400e;
+}
+.aab-desc {
+  font-size: 12px;
+  color: #b45309;
+  margin-top: 2px;
+}
+.aab-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 /* Admin Quick Stats */
 .admin-stats-grid {
   display: grid;
