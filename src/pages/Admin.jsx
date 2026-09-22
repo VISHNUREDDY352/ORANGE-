@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
-import { ADMIN_PASSWORD, BOOKING_STATUSES } from '../config.js'
+import { SHOP, ADMIN_PASSWORD, BOOKING_STATUSES } from '../config.js'
 import {
   getBookings,
   updateBookingStatus,
@@ -45,7 +45,7 @@ function LoginView({ onLogin }) {
 
   function submit(e) {
     e.preventDefault()
-    if (pw === ADMIN_PASSWORD) {
+    if (pw.trim() === ADMIN_PASSWORD) {
       sessionStorage.setItem('admin_ok', '1')
       onLogin()
     } else {
@@ -122,14 +122,36 @@ function CreateOfferModal({ onClose }) {
   const handleImageFile = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Image file is too large. Please select an image under 2MB.')
+    if (file.size > 8 * 1024 * 1024) {
+      alert('Image file is too large. Please select an image under 8MB.')
       return
     }
     const reader = new FileReader()
     reader.onload = (event) => {
-      setCustomImage(event.target.result)
-      setSelectedTheme('custom')
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const maxDim = 800
+        let w = img.width
+        let h = img.height
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w)
+            w = maxDim
+          } else {
+            w = Math.round((w * maxDim) / h)
+            h = maxDim
+          }
+        }
+        canvas.width = w
+        canvas.height = h
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, w, h)
+        const compressed = canvas.toDataURL('image/jpeg', 0.8)
+        setCustomImage(compressed)
+        setSelectedTheme('custom')
+      }
+      img.src = event.target.result
     }
     reader.readAsDataURL(file)
   }
@@ -482,9 +504,31 @@ function Dashboard({ onLogout }) {
   const offers = useOffers()
   const [activeTab, setActiveTab] = useState('bookings')
   const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
 
-  const filtered = filter === 'all' ? bookings : bookings.filter((b) => b.status === filter)
-  const fmtDate = (ts) => new Date(ts).toLocaleString()
+  const stats = {
+    total: bookings.length,
+    pending: bookings.filter((b) => b.status === 'pending').length,
+    confirmed: bookings.filter((b) => b.status === 'confirmed').length,
+    completed: bookings.filter((b) => b.status === 'completed').length,
+  }
+
+  const filtered = bookings.filter((b) => {
+    const matchesStatus = filter === 'all' || b.status === filter
+    if (!matchesStatus) return false
+    if (!search.trim()) return true
+    const q = search.trim().toLowerCase()
+    return (
+      (b.name && b.name.toLowerCase().includes(q)) ||
+      (b.phone && b.phone.includes(q)) ||
+      (b.id && b.id.toLowerCase().includes(q)) ||
+      (b.address && b.address.toLowerCase().includes(q)) ||
+      (b.brand && b.brand.toLowerCase().includes(q)) ||
+      (b.appliance && b.appliance.toLowerCase().includes(q))
+    )
+  })
+
+  const fmtDate = (ts) => (ts ? new Date(ts).toLocaleString() : '')
 
   return (
     <div className="page">
@@ -493,6 +537,26 @@ function Dashboard({ onLogout }) {
         <div style={{ display: 'flex', gap: '8px' }}>
           <button type="button" className="btn btn-outline btn-sm" onClick={() => navigate('/')}>🏠 User View</button>
           <button type="button" className="btn btn-outline btn-sm" onClick={onLogout}>{t('logout')}</button>
+        </div>
+      </div>
+
+      {/* Quick Statistics Bar */}
+      <div className="admin-stats-grid">
+        <div className="admin-stat-card">
+          <div className="asc-num">{stats.total}</div>
+          <div className="asc-label">{t('all') || 'Total'}</div>
+        </div>
+        <div className="admin-stat-card stat-pending">
+          <div className="asc-num">{stats.pending}</div>
+          <div className="asc-label">{t('pending')}</div>
+        </div>
+        <div className="admin-stat-card stat-confirmed">
+          <div className="asc-num">{stats.confirmed}</div>
+          <div className="asc-label">{t('confirmed')}</div>
+        </div>
+        <div className="admin-stat-card stat-completed">
+          <div className="asc-num">{stats.completed}</div>
+          <div className="asc-label">{t('completed')}</div>
         </div>
       </div>
 
@@ -518,16 +582,30 @@ function Dashboard({ onLogout }) {
         <OffersManager />
       ) : (
         <>
-          <div className="filter-row" style={{ marginTop: '14px' }}>
-            <label>
-              <span>{t('filterStatus')}:</span>
-              <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-                <option value="all">{t('all')}</option>
-                {BOOKING_STATUSES.map((s) => (
-                  <option key={s} value={s}>{t(s)}</option>
-                ))}
-              </select>
-            </label>
+          <div className="admin-controls-row">
+            <input
+              type="text"
+              className="admin-search-input"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="🔍 Search bookings by name, phone, ID, or area..."
+            />
+            <div className="filter-row">
+              <label>
+                <span>{t('filterStatus')}:</span>
+                <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+                  <option value="all">{t('all')}</option>
+                  {BOOKING_STATUSES.map((s) => (
+                    <option key={s} value={s}>{t(s)}</option>
+                  ))}
+                </select>
+              </label>
+              {search && (
+                <button type="button" className="btn btn-outline btn-sm" onClick={() => setSearch('')}>
+                  Clear Search
+                </button>
+              )}
+            </div>
           </div>
 
           {filtered.length === 0 ? (
@@ -569,7 +647,29 @@ function Dashboard({ onLogout }) {
                         ))}
                       </select>
                     </label>
-                    <button className="btn btn-danger btn-sm" onClick={() => deleteBooking(b.id)}>🗑️</button>
+                    <a
+                      className="btn btn-whatsapp btn-sm"
+                      href={`https://wa.me/91${b.phone}?text=${encodeURIComponent(
+                        `Hi ${b.name}, your service booking (${b.id}) for ${t(b.appliance)} on ${b.date} (${b.time}) has been confirmed by Orange Refrigeration.\nAddress: ${b.address}\nOur technician will visit your location. For queries call: ${SHOP.phones[0]}`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      title={t('sendAcceptanceWa')}
+                    >
+                      💬 {t('notifyCustomer') || 'WhatsApp'}
+                    </a>
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      onClick={() => {
+                        if (window.confirm(`Delete booking ${b.id} for ${b.name}? This action cannot be undone.`)) {
+                          deleteBooking(b.id)
+                        }
+                      }}
+                      title="Delete booking"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 </div>
               ))}

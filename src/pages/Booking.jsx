@@ -1,14 +1,8 @@
 import { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 import { SHOP, APPLIANCE_KEYS, APPLIANCE_BRANDS, TIME_SLOTS, APPLIANCE_IMAGES } from '../config.js'
 import { addBooking } from '../store.js'
-
-const APPLIANCE_ICONS = {
-  ac: '❄️',
-  refrigerator: '🧊',
-  washingMachine: '🌀',
-}
 
 function todayStr() {
   const d = new Date()
@@ -17,9 +11,8 @@ function todayStr() {
 }
 
 export default function Booking() {
-  const { t, lang } = useI18n()
+  const { t } = useI18n()
   const location = useLocation()
-  const navigate = useNavigate()
   const preset = location.state?.appliance || ''
   const [voucher, setVoucher] = useState(() => location.state?.appliedVoucher || null)
   const [form, setForm] = useState({
@@ -44,7 +37,7 @@ export default function Booking() {
       setForm((f) => ({
         ...f,
         appliance: selectedAppliance,
-        brand: availableBrands.includes(f.brand) ? f.brand : '',
+        brand: (availableBrands.includes(f.brand) || f.brand === 'Other') ? f.brand : '',
       }))
     }
     if (location.state?.appliedVoucher) {
@@ -52,7 +45,21 @@ export default function Booking() {
     }
   }, [location.state])
 
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const set = (k) => (e) => {
+    const val = e.target.value
+    setForm((f) => ({ ...f, [k]: val }))
+    if (errors[k]) setErrors((er) => ({ ...er, [k]: null }))
+  }
+
+  const handlePhoneChange = (e) => {
+    let digits = e.target.value.replace(/\D/g, '')
+    if (digits.length === 12 && digits.startsWith('91')) {
+      digits = digits.slice(2)
+    }
+    digits = digits.slice(0, 10)
+    setForm((f) => ({ ...f, phone: digits }))
+    if (errors.phone) setErrors((er) => ({ ...er, phone: null }))
+  }
 
   function validate() {
     const err = {}
@@ -62,7 +69,11 @@ export default function Booking() {
     if (!form.appliance) err.appliance = t('required')
     if (!form.brand) err.brand = t('required')
     if (form.brand === 'Other' && !form.customBrand.trim()) err.customBrand = t('required')
-    if (!form.date) err.date = t('required')
+    if (!form.date) {
+      err.date = t('required')
+    } else if (form.date < todayStr()) {
+      err.date = 'Date cannot be in the past'
+    }
     if (!form.time) err.time = t('required')
     setErrors(err)
     return Object.keys(err).length === 0
@@ -73,7 +84,17 @@ export default function Booking() {
     if (!validate()) return
     const finalBrand = form.brand === 'Other' ? (form.customBrand.trim() || 'Other') : form.brand
     const voucherText = voucher ? `${voucher.couponCode || voucher.title} (${voucher.discount || ''})` : ''
-    addBooking({ ...form, brand: finalBrand, voucher: voucherText })
+    addBooking({
+      name: form.name.trim(),
+      phone: form.phone.trim(),
+      address: form.address.trim(),
+      appliance: form.appliance,
+      brand: finalBrand,
+      issue: form.issue.trim(),
+      date: form.date,
+      time: form.time,
+      voucher: voucherText,
+    })
     setDone(true)
   }
 
@@ -85,15 +106,17 @@ export default function Booking() {
   }
 
   if (done) {
+    const finalBrand = form.brand === 'Other' ? (form.customBrand.trim() || 'Other') : form.brand
     const waText = `Hi Orange Services, I booked an appliance service!\n\n` +
-      `Name: ${form.name}\n` +
-      `Phone: ${form.phone}\n` +
+      `Name: ${form.name.trim()}\n` +
+      `Phone: ${form.phone.trim()}\n` +
       `Appliance: ${t(form.appliance)}\n` +
-      `Brand: ${form.brand === 'Other' ? form.customBrand : form.brand}\n` +
+      `Brand: ${finalBrand}\n` +
+      (form.issue.trim() ? `Problem: ${form.issue.trim()}\n` : '') +
       `Date: ${form.date} (${form.time})\n` +
-      `Address: ${form.address}\n` +
+      `Address: ${form.address.trim()}\n` +
       (voucher ? `🎟️ Voucher Applied: ${voucher.couponCode || voucher.title} (${voucher.discount || ''})\n` : '') +
-      `Please confirm.`
+      `Please confirm appointment.`
 
     return (
       <div className="page center-page">
@@ -155,19 +178,19 @@ export default function Booking() {
 
           <label className="field">
             <span>{t('fullName')} *</span>
-            <input value={form.name} onChange={set('name')} type="text" />
+            <input value={form.name} onChange={set('name')} type="text" placeholder="Your full name" />
             {errors.name && <em className="err">{errors.name}</em>}
           </label>
 
           <label className="field">
             <span>{t('phoneNumber')} *</span>
-            <input value={form.phone} onChange={set('phone')} type="tel" inputMode="numeric" maxLength={10} placeholder="10-digit" />
+            <input value={form.phone} onChange={handlePhoneChange} type="tel" inputMode="numeric" maxLength={10} placeholder="10-digit mobile number" />
             {errors.phone && <em className="err">{errors.phone}</em>}
           </label>
 
           <label className="field">
             <span>{t('fullAddress')} *</span>
-            <textarea value={form.address} onChange={set('address')} rows={2} />
+            <textarea value={form.address} onChange={set('address')} rows={2} placeholder="Door no, street, landmark, town" />
             {errors.address && <em className="err">{errors.address}</em>}
           </label>
         </fieldset>

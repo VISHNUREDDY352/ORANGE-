@@ -1,60 +1,32 @@
-// Real-time store backed by LocalStorage + Cloud DB Sync for cross-device support (Laptop <-> Mobile).
+// High-performance reactive store backed by LocalStorage with multi-tab & multi-window BroadcastChannel sync.
 
 const LOCAL_KEY = 'orange_bookings'
-const CLOUD_API_URL = 'https://api.jsonbin.io/v3/b'
-// Shared public cloud ID for cross-device live sync
-const CLOUD_BIN_ID = '66eab537ad19ca34f8aa4b12' 
+const OFFERS_LOCAL_KEY = 'orange_offers'
+
+// Cross-tab broadcast channel for instantaneous zero-latency synchronization
+const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
+  ? new BroadcastChannel('orange_services_sync')
+  : null
 
 function readLocal() {
   try {
-    return JSON.parse(localStorage.getItem(LOCAL_KEY)) || []
+    const raw = localStorage.getItem(LOCAL_KEY)
+    return raw ? JSON.parse(raw) : []
   } catch {
     return []
   }
 }
 
 function writeLocal(list) {
-  localStorage.setItem(LOCAL_KEY, JSON.stringify(list))
+  try {
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(list))
+  } catch (err) {
+    console.error('Failed to persist bookings to localStorage:', err)
+  }
   window.dispatchEvent(new Event('bookings-updated'))
-}
-
-// Fetch latest bookings from cloud DB
-async function fetchCloudBookings() {
   try {
-    const res = await fetch(`https://api.restful-api.dev/objects?ids=orange_services_app_bookings`)
-    if (res.ok) {
-      const data = await res.json()
-      if (data && data[0]?.data?.list) {
-        const cloudList = data[0].data.list
-        const localList = readLocal()
-        // Merge cloud & local by ID & timestamp
-        const map = new Map()
-        localList.forEach((b) => map.set(b.id, b))
-        cloudList.forEach((b) => map.set(b.id, b))
-        const merged = Array.from(map.values())
-        writeLocal(merged)
-      }
-    }
-  } catch (err) {
-    // Fallback to local
-  }
-}
-
-// Push updated bookings to cloud DB
-async function pushCloudBookings(list) {
-  try {
-    await fetch('https://api.restful-api.dev/objects', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: 'orange_services_app_bookings',
-        name: 'Orange Services Bookings',
-        data: { list, updatedAt: Date.now() },
-      }),
-    })
-  } catch (err) {
-    // Silent fallback
-  }
+    syncChannel?.postMessage({ type: 'bookings-updated' })
+  } catch {}
 }
 
 export function getBookings() {
@@ -64,15 +36,16 @@ export function getBookings() {
 export function addBooking(booking) {
   const list = readLocal()
   const record = {
-    id: 'BK' + Date.now().toString(36).toUpperCase(),
+    id: 'BK' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase(),
     status: 'pending',
     createdAt: Date.now(),
     ...booking,
   }
   list.push(record)
   writeLocal(list)
-  localStorage.setItem('latest_booking_id', record.id)
-  pushCloudBookings(list)
+  try {
+    localStorage.setItem('latest_booking_id', record.id)
+  } catch {}
   return record
 }
 
@@ -82,31 +55,35 @@ export function updateBookingStatus(id, status) {
   if (idx !== -1) {
     list[idx].status = status
     writeLocal(list)
-    pushCloudBookings(list)
   }
 }
 
 export function deleteBooking(id) {
   const list = readLocal().filter((b) => b.id !== id)
   writeLocal(list)
-  pushCloudBookings(list)
 }
 
 export function subscribe(callback) {
-  const handler = () => callback()
-  window.addEventListener('bookings-updated', handler)
-  window.addEventListener('storage', handler)
+  const localHandler = () => callback()
+  const storageHandler = (e) => {
+    if (!e || e.key === LOCAL_KEY) {
+      callback()
+    }
+  }
+  const channelHandler = (e) => {
+    if (e.data?.type === 'bookings-updated') {
+      callback()
+    }
+  }
 
-  // Initial cloud fetch & periodic poll for cross-device sync (e.g. Laptop -> Mobile)
-  fetchCloudBookings().then(callback)
-  const timer = setInterval(() => {
-    fetchCloudBookings().then(callback)
-  }, 4000)
+  window.addEventListener('bookings-updated', localHandler)
+  window.addEventListener('storage', storageHandler)
+  syncChannel?.addEventListener('message', channelHandler)
 
   return () => {
-    window.removeEventListener('bookings-updated', handler)
-    window.removeEventListener('storage', handler)
-    clearInterval(timer)
+    window.removeEventListener('bookings-updated', localHandler)
+    window.removeEventListener('storage', storageHandler)
+    syncChannel?.removeEventListener('message', channelHandler)
   }
 }
 
@@ -194,8 +171,6 @@ export const DEFAULT_OFFERS = [
   },
 ]
 
-const OFFERS_LOCAL_KEY = 'orange_offers'
-
 function readOffersLocal() {
   try {
     const raw = localStorage.getItem(OFFERS_LOCAL_KEY)
@@ -208,36 +183,14 @@ function readOffersLocal() {
 }
 
 function writeOffersLocal(list) {
-  localStorage.setItem(OFFERS_LOCAL_KEY, JSON.stringify(list))
+  try {
+    localStorage.setItem(OFFERS_LOCAL_KEY, JSON.stringify(list))
+  } catch (err) {
+    console.error('Failed to persist offers to localStorage:', err)
+  }
   window.dispatchEvent(new Event('offers-updated'))
-}
-
-async function fetchCloudOffers() {
   try {
-    const res = await fetch(`https://api.restful-api.dev/objects?ids=orange_services_app_offers`)
-    if (res.ok) {
-      const data = await res.json()
-      if (data && data[0]?.data?.list) {
-        const cloudList = data[0].data.list
-        if (Array.isArray(cloudList) && cloudList.length > 0) {
-          writeOffersLocal(cloudList)
-        }
-      }
-    }
-  } catch {}
-}
-
-async function pushCloudOffers(list) {
-  try {
-    await fetch('https://api.restful-api.dev/objects', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: 'orange_services_app_offers',
-        name: 'Orange Services Offers',
-        data: { list, updatedAt: Date.now() },
-      }),
-    })
+    syncChannel?.postMessage({ type: 'offers-updated' })
   } catch {}
 }
 
@@ -248,14 +201,13 @@ export function getOffers() {
 export function addOffer(offer) {
   const list = readOffersLocal()
   const record = {
-    id: 'OFFER_' + Date.now().toString(36).toUpperCase(),
+    id: 'OFFER_' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase(),
     active: true,
     createdAt: Date.now(),
     ...offer,
   }
   list.unshift(record)
   writeOffersLocal(list)
-  pushCloudOffers(list)
   return record
 }
 
@@ -265,7 +217,6 @@ export function updateOffer(id, updated) {
   if (idx !== -1) {
     list[idx] = { ...list[idx], ...updated }
     writeOffersLocal(list)
-    pushCloudOffers(list)
   }
 }
 
@@ -275,34 +226,38 @@ export function toggleOfferActive(id) {
   if (idx !== -1) {
     list[idx].active = !list[idx].active
     writeOffersLocal(list)
-    pushCloudOffers(list)
   }
 }
 
 export function deleteOffer(id) {
   const list = readOffersLocal().filter((o) => o.id !== id)
   writeOffersLocal(list)
-  pushCloudOffers(list)
 }
 
 export function resetOffersToDefault() {
   writeOffersLocal(DEFAULT_OFFERS)
-  pushCloudOffers(DEFAULT_OFFERS)
 }
 
 export function subscribeOffers(callback) {
-  const handler = () => callback()
-  window.addEventListener('offers-updated', handler)
-  window.addEventListener('storage', handler)
+  const localHandler = () => callback()
+  const storageHandler = (e) => {
+    if (!e || e.key === OFFERS_LOCAL_KEY) {
+      callback()
+    }
+  }
+  const channelHandler = (e) => {
+    if (e.data?.type === 'offers-updated') {
+      callback()
+    }
+  }
 
-  fetchCloudOffers().then(callback)
-  const timer = setInterval(() => {
-    fetchCloudOffers().then(callback)
-  }, 5000)
+  window.addEventListener('offers-updated', localHandler)
+  window.addEventListener('storage', storageHandler)
+  syncChannel?.addEventListener('message', channelHandler)
 
   return () => {
-    window.removeEventListener('offers-updated', handler)
-    window.removeEventListener('storage', handler)
-    clearInterval(timer)
+    window.removeEventListener('offers-updated', localHandler)
+    window.removeEventListener('storage', storageHandler)
+    syncChannel?.removeEventListener('message', channelHandler)
   }
 }

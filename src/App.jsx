@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useI18n } from './i18n.jsx'
 import { SHOP } from './config.js'
@@ -17,6 +17,26 @@ function TopBar() {
 
   const currentLang = languages.find((l) => l.code === lang) || languages[0]
 
+  // Close modals on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowLangModal(false)
+        setShowPortalModal(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  const handleBack = () => {
+    if (window.history.state && window.history.state.idx > 0) {
+      navigate(-1)
+    } else {
+      navigate('/')
+    }
+  }
+
   return (
     <>
       <header className="topbar">
@@ -25,14 +45,22 @@ function TopBar() {
             <button
               type="button"
               className="back-btn"
-              onClick={() => navigate(-1)}
+              onClick={handleBack}
               aria-label={t('back')}
             >
               ←
             </button>
           )}
-          <img src="/logo.png" alt="Orange Logo" className="logo-img" />
-          <span className="brand-name">{SHOP.shortName || 'Orange'}</span>
+          <div
+            className="brand-link"
+            onClick={() => navigate('/')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => e.key === 'Enter' && navigate('/')}
+          >
+            <img src="/logo.png" alt="Orange Logo" className="logo-img" />
+            <span className="brand-name">{SHOP.shortName || 'Orange'}</span>
+          </div>
           <button
             type="button"
             className={`brand-tag ${isAdmin ? 'brand-tag-admin' : 'brand-tag-user'}`}
@@ -151,6 +179,9 @@ function TopBar() {
 
       <div className="ticker-banner">
         <div className="ticker-track">
+          <span>{t('topTickerBanner')}</span>
+          <span>⚡ {t('trustExpressTitle')} • {t('trustWarrantyTitle')}</span>
+          <span>📞 {t('callNow')}: {SHOP.phones[0]}</span>
           <span>{t('topTickerBanner')}</span>
           <span>⚡ {t('trustExpressTitle')} • {t('trustWarrantyTitle')}</span>
           <span>📞 {t('callNow')}: {SHOP.phones[0]}</span>

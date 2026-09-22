@@ -1,14 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 import { SHOP, APPLIANCE_KEYS, APPLIANCE_IMAGES } from '../config.js'
 import { getBookings, subscribe, getOffers, subscribeOffers, DEFAULT_OFFERS } from '../store.js'
-
-const APPLIANCE_ICONS = {
-  ac: '❄️',
-  refrigerator: '🧊',
-  washingMachine: '🌀',
-}
 
 const BRANDS_LIST = [
   { name: 'Samsung', logo: '🌐' },
@@ -29,6 +23,7 @@ export default function Home() {
   const [adIndex, setAdIndex] = useState(0)
   const [acceptedBooking, setAcceptedBooking] = useState(null)
   const [offers, setOffers] = useState(() => getOffers())
+  const timerRef = useRef(null)
 
   // Active banner / festival cards for top slider
   const activeBanners = offers.filter((o) => o.active && (o.type === 'banner' || o.type === 'festival' || !o.type))
@@ -38,28 +33,34 @@ export default function Home() {
   const activeVouchers = offers.filter((o) => o.active && (o.type === 'voucher' || o.couponCode))
 
   const checkAcceptedBooking = () => {
-    const latestId = localStorage.getItem('latest_booking_id')
-    if (latestId) {
-      const b = getBookings().find((x) => x.id === latestId)
-      if (b && b.status === 'confirmed') {
-        setAcceptedBooking(b)
-      } else {
-        setAcceptedBooking(null)
+    try {
+      const latestId = localStorage.getItem('latest_booking_id')
+      if (latestId) {
+        const b = getBookings().find((x) => x.id === latestId)
+        if (b && b.status === 'confirmed') {
+          setAcceptedBooking(b)
+        } else {
+          setAcceptedBooking(null)
+        }
       }
-    }
+    } catch {}
+  }
+
+  const resetTimer = () => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    timerRef.current = setInterval(() => {
+      setAdIndex((i) => (i + 1) % (displayBanners.length || 1))
+    }, 4500)
   }
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setAdIndex((i) => (i + 1) % (displayBanners.length || 1))
-    }, 4200)
-
+    resetTimer()
     checkAcceptedBooking()
     const unsubBookings = subscribe(checkAcceptedBooking)
     const unsubOffers = subscribeOffers(() => setOffers(getOffers()))
 
     return () => {
-      clearInterval(timer)
+      if (timerRef.current) clearInterval(timerRef.current)
       unsubBookings()
       unsubOffers()
     }
@@ -67,10 +68,12 @@ export default function Home() {
 
   const handlePrevAd = () => {
     setAdIndex((i) => (i - 1 + displayBanners.length) % displayBanners.length)
+    resetTimer()
   }
 
   const handleNextAd = () => {
     setAdIndex((i) => (i + 1) % displayBanners.length)
+    resetTimer()
   }
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SHOP.mapsQuery)}`
@@ -85,11 +88,11 @@ export default function Home() {
             <div>
               <div className="aac-title">{t('bookingAcceptedTitle')}</div>
               <div className="aac-desc">
-                Your booking for <strong>{t(acceptedBooking.appliance)}</strong> on {acceptedBooking.date} ({acceptedBooking.time}) has been confirmed!
+                {t('bookingAcceptedDesc')} <strong>{t(acceptedBooking.appliance)}</strong> ({acceptedBooking.date} {acceptedBooking.time})
               </div>
             </div>
           </div>
-          <button type="button" className="aac-close" onClick={() => setAcceptedBooking(null)}>✕</button>
+          <button type="button" className="aac-close" onClick={() => setAcceptedBooking(null)} aria-label="Close notification">✕</button>
         </div>
       )}
 
@@ -111,9 +114,11 @@ export default function Home() {
         <section className="section">
           <div className="section-header">
             <h2 className="section-title">🔥 {t('specialOffers')}</h2>
-            <span className="banner-badge-indicator">
-              {(adIndex % displayBanners.length) + 1}/{displayBanners.length}
-            </span>
+            {displayBanners.length > 1 && (
+              <span className="banner-badge-indicator">
+                {(adIndex % displayBanners.length) + 1}/{displayBanners.length}
+              </span>
+            )}
           </div>
           <div
             className="promo-card"
@@ -143,21 +148,26 @@ export default function Home() {
                   Use Code: <strong>{ad.couponCode}</strong>
                 </div>
               )}
-              <div className="promo-controls" onClick={(e) => e.stopPropagation()}>
-                <button type="button" className="promo-arrow" onClick={handlePrevAd} aria-label="Previous banner">‹</button>
-                <div className="promo-dots">
-                  {displayBanners.map((_, i) => (
-                    <button
-                      type="button"
-                      key={i}
-                      className={`promo-dot ${i === (adIndex % displayBanners.length) ? 'active' : ''}`}
-                      onClick={() => setAdIndex(i)}
-                      aria-label={`Go to slide ${i + 1}`}
-                    />
-                  ))}
+              {displayBanners.length > 1 && (
+                <div className="promo-controls" onClick={(e) => e.stopPropagation()}>
+                  <button type="button" className="promo-arrow" onClick={handlePrevAd} aria-label="Previous banner">‹</button>
+                  <div className="promo-dots">
+                    {displayBanners.map((_, i) => (
+                      <button
+                        type="button"
+                        key={i}
+                        className={`promo-dot ${i === (adIndex % displayBanners.length) ? 'active' : ''}`}
+                        onClick={() => {
+                          setAdIndex(i)
+                          resetTimer()
+                        }}
+                        aria-label={`Go to slide ${i + 1}`}
+                      />
+                    ))}
+                  </div>
+                  <button type="button" className="promo-arrow" onClick={handleNextAd} aria-label="Next banner">›</button>
                 </div>
-                <button type="button" className="promo-arrow" onClick={handleNextAd} aria-label="Next banner">›</button>
-              </div>
+              )}
             </div>
           </div>
         </section>
@@ -167,7 +177,7 @@ export default function Home() {
       {activeVouchers.length > 0 && (
         <section className="section">
           <div className="section-header">
-            <h2 className="section-title">🎟️ Discount Coupons & Vouchers</h2>
+            <h2 className="section-title">🎟️ {t('specialOffers')} & Vouchers</h2>
             <span className="banner-badge-indicator">{activeVouchers.length} Deals</span>
           </div>
           <div className="vouchers-list">
@@ -207,7 +217,7 @@ export default function Home() {
                       })
                     }}
                   >
-                    Apply & Book
+                    {v.cta || 'Apply & Book'}
                   </button>
                 </div>
               </div>
@@ -228,6 +238,21 @@ export default function Home() {
               <span className="service-name">{t(k)}</span>
             </button>
           ))}
+        </div>
+      </section>
+
+      {/* Brands We Service Showcase */}
+      <section className="section">
+        <h2 className="section-title">{t('brandsWeService')}</h2>
+        <div className="brands-marquee-banner">
+          <div className="brands-marquee-track">
+            {BRANDS_LIST.map((b) => (
+              <div key={b.name} className="brand-pill">
+                <span className="brand-pill-ico">{b.logo}</span>
+                <span>{b.name}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
