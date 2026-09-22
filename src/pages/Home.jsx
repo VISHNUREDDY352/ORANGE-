@@ -17,10 +17,73 @@ const BRANDS_LIST = [
   { name: 'Lloyd', logo: '💎' },
 ]
 
+function AllCouponsModal({ vouchers, onClose, onSelect }) {
+  const [copied, setCopied] = useState(null)
+
+  const copyCode = (code, e) => {
+    e.stopPropagation()
+    try {
+      navigator.clipboard.writeText(code)
+      setCopied(code)
+      setTimeout(() => setCopied(null), 2000)
+    } catch {}
+  }
+
+  return (
+    <div className="lang-modal-overlay" onClick={onClose}>
+      <div className="lang-modal-card" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '85vh', overflowY: 'auto' }}>
+        <div className="lang-modal-head">
+          <h3>🎟️ All Available Coupons ({vouchers.length})</h3>
+          <button type="button" className="lang-modal-close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+        <p style={{ fontSize: '12.5px', color: 'var(--muted)', margin: '4px 0 12px' }}>
+          Tap any coupon to automatically apply it to your service booking.
+        </p>
+        <div className="vouchers-list">
+          {vouchers.map((v) => (
+            <div
+              key={v.id}
+              className="voucher-ticket-card"
+              onClick={() => onSelect(v)}
+            >
+              <div className="vtc-left">
+                <span className="vtc-badge">{v.badge || 'COUPON'}</span>
+                <div className="vtc-title">{v.title}</div>
+                <div className="vtc-desc">{v.desc}</div>
+                {v.couponCode && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                    <div className="vtc-code-pill">CODE: <strong>{v.couponCode}</strong></div>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: '2px 8px', fontSize: '10.5px' }}
+                      onClick={(e) => copyCode(v.couponCode, e)}
+                    >
+                      {copied === v.couponCode ? '✓ Copied' : '📋 Copy'}
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="vtc-right">
+                <div className="vtc-discount">{v.discount || v.tag}</div>
+                <button type="button" className="vtc-apply-btn">
+                  {v.cta || 'Apply'} →
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const { t } = useI18n()
   const navigate = useNavigate()
   const [adIndex, setAdIndex] = useState(0)
+  const [voucherIndex, setVoucherIndex] = useState(0)
+  const [showAllCoupons, setShowAllCoupons] = useState(false)
   const [acceptedBooking, setAcceptedBooking] = useState(null)
   const [offers, setOffers] = useState(() => getOffers())
   const timerRef = useRef(null)
@@ -74,6 +137,16 @@ export default function Home() {
   const handleNextAd = () => {
     setAdIndex((i) => (i + 1) % displayBanners.length)
     resetTimer()
+  }
+
+  const handlePrevVoucher = () => {
+    if (!activeVouchers.length) return
+    setVoucherIndex((i) => (i - 1 + activeVouchers.length) % activeVouchers.length)
+  }
+
+  const handleNextVoucher = () => {
+    if (!activeVouchers.length) return
+    setVoucherIndex((i) => (i + 1) % activeVouchers.length)
   }
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SHOP.mapsQuery)}`
@@ -173,55 +246,109 @@ export default function Home() {
         </section>
       )}
 
-      {/* Active Discount Vouchers & Festival Coupons Section */}
+      {/* Active Discount Vouchers & Festival Coupons Section with Arrow Controls */}
       {activeVouchers.length > 0 && (
         <section className="section">
           <div className="section-header">
             <h2 className="section-title">🎟️ {t('specialOffers')} & Vouchers</h2>
-            <span className="banner-badge-indicator">{activeVouchers.length} Deals</span>
-          </div>
-          <div className="vouchers-list">
-            {activeVouchers.map((v) => (
-              <div
-                key={v.id}
-                className="voucher-ticket-card"
-                onClick={() => navigate('/book', {
-                  state: {
-                    appliance: v.appliance && v.appliance !== 'all' ? v.appliance : undefined,
-                    appliedVoucher: v,
-                  },
-                })}
-              >
-                <div className="vtc-left">
-                  <span className="vtc-badge">{v.badge || 'COUPON'}</span>
-                  <div className="vtc-title">{v.title}</div>
-                  <div className="vtc-desc">{v.desc}</div>
-                  {v.couponCode && (
-                    <div className="vtc-code-pill">
-                      CODE: <strong>{v.couponCode}</strong>
-                    </div>
-                  )}
-                </div>
-                <div className="vtc-right">
-                  <div className="vtc-discount">{v.discount || v.tag}</div>
+            <div className="section-header-actions">
+              {activeVouchers.length > 1 && (
+                <div className="section-arrow-controls">
                   <button
                     type="button"
-                    className="vtc-apply-btn"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      navigate('/book', {
-                        state: {
-                          appliance: v.appliance && v.appliance !== 'all' ? v.appliance : undefined,
-                          appliedVoucher: v,
-                        },
-                      })
-                    }}
+                    className="nav-arrow-btn"
+                    onClick={handlePrevVoucher}
+                    title="Previous coupon"
+                    aria-label="Previous coupon"
                   >
-                    {v.cta || 'Apply & Book'}
+                    ←
+                  </button>
+                  <span className="coupons-counter-pill">
+                    {(voucherIndex % activeVouchers.length) + 1} / {activeVouchers.length}
+                  </span>
+                  <button
+                    type="button"
+                    className="nav-arrow-btn"
+                    onClick={handleNextVoucher}
+                    title="Next coupon"
+                    aria-label="Next coupon"
+                  >
+                    →
                   </button>
                 </div>
+              )}
+              <button
+                type="button"
+                className="see-all-coupons-btn"
+                onClick={() => setShowAllCoupons(true)}
+                title="See all coupons"
+              >
+                <span>{t('seeAll') || 'See All'}</span>
+                <span className="arrow-sym">→</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="vouchers-carousel-wrap">
+            {(() => {
+              const v = activeVouchers[voucherIndex % activeVouchers.length]
+              if (!v) return null
+              return (
+                <div
+                  key={v.id}
+                  className="voucher-ticket-card"
+                  onClick={() => navigate('/book', {
+                    state: {
+                      appliance: v.appliance && v.appliance !== 'all' ? v.appliance : undefined,
+                      appliedVoucher: v,
+                    },
+                  })}
+                >
+                  <div className="vtc-left">
+                    <span className="vtc-badge">{v.badge || 'COUPON'}</span>
+                    <div className="vtc-title">{v.title}</div>
+                    <div className="vtc-desc">{v.desc}</div>
+                    {v.couponCode && (
+                      <div className="vtc-code-pill">
+                        CODE: <strong>{v.couponCode}</strong>
+                      </div>
+                    )}
+                  </div>
+                  <div className="vtc-right">
+                    <div className="vtc-discount">{v.discount || v.tag}</div>
+                    <button
+                      type="button"
+                      className="vtc-apply-btn"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate('/book', {
+                          state: {
+                            appliance: v.appliance && v.appliance !== 'all' ? v.appliance : undefined,
+                            appliedVoucher: v,
+                          },
+                        })
+                      }}
+                    >
+                      {v.cta || 'Apply & Book'} →
+                    </button>
+                  </div>
+                </div>
+              )
+            })()}
+
+            {activeVouchers.length > 1 && (
+              <div className="promo-dots" style={{ justifyContent: 'center', marginTop: '10px' }}>
+                {activeVouchers.map((_, i) => (
+                  <button
+                    type="button"
+                    key={i}
+                    className={`promo-dot ${i === (voucherIndex % activeVouchers.length) ? 'active' : ''}`}
+                    onClick={() => setVoucherIndex(i)}
+                    aria-label={`Go to coupon ${i + 1}`}
+                  />
+                ))}
               </div>
-            ))}
+            )}
           </div>
         </section>
       )}
@@ -335,6 +462,19 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {showAllCoupons && (
+        <AllCouponsModal
+          vouchers={activeVouchers}
+          onClose={() => setShowAllCoupons(false)}
+          onSelect={(v) => navigate('/book', {
+            state: {
+              appliance: v.appliance && v.appliance !== 'all' ? v.appliance : undefined,
+              appliedVoucher: v,
+            },
+          })}
+        />
+      )}
     </div>
   )
 }

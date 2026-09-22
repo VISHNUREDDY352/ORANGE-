@@ -1777,6 +1777,81 @@ body {
 /* ---------------------------------------------------------------------------
    Customer Vouchers & Festival Coupons Section
    --------------------------------------------------------------------------- */
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-arrow-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.nav-arrow-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+.nav-arrow-btn:hover {
+  background: var(--orange-light);
+  border-color: var(--orange);
+  color: var(--orange-dark);
+}
+.nav-arrow-btn:active {
+  transform: scale(0.92);
+}
+.coupons-counter-pill {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  background: #f1f5f9;
+  padding: 3px 8px;
+  border-radius: 999px;
+  min-width: 36px;
+  text-align: center;
+}
+.see-all-coupons-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  color: var(--orange-dark);
+  font-size: 11.5px;
+  font-weight: 800;
+  padding: 5px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.see-all-coupons-btn:hover {
+  background: var(--orange-light);
+  border-color: var(--orange);
+}
+.see-all-coupons-btn .arrow-sym {
+  font-size: 13px;
+  font-weight: 900;
+  transition: transform 0.15s ease;
+}
+.see-all-coupons-btn:hover .arrow-sym {
+  transform: translateX(2px);
+}
+.vouchers-carousel-wrap {
+  position: relative;
+}
+
 .vouchers-list {
   display: flex;
   flex-direction: column;
