@@ -59,7 +59,9 @@ async function fetchRemoteBookings() {
       .order('created_at', { ascending: false })
 
     if (!error && Array.isArray(data)) {
-      const remoteList = data.map(normalizeFromDb)
+      const remoteList = data
+        .filter((row) => !row.id?.startsWith('__APP_'))
+        .map(normalizeFromDb)
       writeLocal(remoteList)
       return remoteList
     }
@@ -276,6 +278,60 @@ export const DEFAULT_OFFERS = [
   },
 ]
 
+const OFFERS_SYNC_ID = '__APP_SYNC_OFFERS__'
+
+async function syncOffersToCloud(list) {
+  try {
+    await supabase.from('bookings').upsert([{
+      id: OFFERS_SYNC_ID,
+      name: JSON.stringify(list),
+      phone: '0000000000',
+      address: 'Cloud Sync Offers Storage',
+      appliance: 'all',
+      brand: '',
+      issue: 'Offers Storage',
+      date: '2026-01-01',
+      time: '00:00',
+      voucher: '',
+      status: 'system',
+      created_at: Date.now(),
+    }])
+  } catch (err) {
+    console.warn('Failed to sync offers to Supabase cloud:', err)
+  }
+}
+
+async function fetchRemoteOffers() {
+  try {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('id', OFFERS_SYNC_ID)
+      .limit(1)
+
+    if (!error && data && data.length > 0 && data[0].name) {
+      try {
+        const parsed = JSON.parse(data[0].name)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localStorage.setItem(OFFERS_LOCAL_KEY, JSON.stringify(parsed))
+          window.dispatchEvent(new Event('offers-updated'))
+          return parsed
+        }
+      } catch (e) {
+        console.warn('Failed to parse remote offers:', e)
+      }
+    } else {
+      // Cloud is empty; initialize with current offers
+      const current = readOffersLocal()
+      await syncOffersToCloud(current)
+      return current
+    }
+  } catch (err) {
+    console.warn('Failed to fetch remote offers from cloud:', err)
+  }
+  return readOffersLocal()
+}
+
 function readOffersLocal() {
   try {
     const raw = localStorage.getItem(OFFERS_LOCAL_KEY)
@@ -297,6 +353,7 @@ function writeOffersLocal(list) {
   try {
     syncChannel?.postMessage({ type: 'offers-updated' })
   } catch {}
+  syncOffersToCloud(list)
 }
 
 export function getOffers() {
@@ -360,9 +417,35 @@ export function subscribeOffers(callback) {
   window.addEventListener('storage', storageHandler)
   syncChannel?.addEventListener('message', channelHandler)
 
+  // 1. Initial cloud fetch to get latest offers created on any device
+  fetchRemoteOffers().then(() => callback())
+
+  // 2. Real-time Supabase listener for offers synced across devices
+  let offersDbChannel = null
+  try {
+    offersDbChannel = supabase
+      .channel('supabase-realtime-offers')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        async (payload) => {
+          if (payload.new?.id === OFFERS_SYNC_ID || payload.old?.id === OFFERS_SYNC_ID) {
+            await fetchRemoteOffers()
+            callback()
+          }
+        }
+      )
+      .subscribe()
+  } catch (err) {
+    console.warn('Supabase realtime offers listener error:', err)
+  }
+
   return () => {
     window.removeEventListener('offers-updated', localHandler)
     window.removeEventListener('storage', storageHandler)
     syncChannel?.removeEventListener('message', channelHandler)
+    if (offersDbChannel) {
+      supabase.removeChannel(offersDbChannel)
+    }
   }
 }
