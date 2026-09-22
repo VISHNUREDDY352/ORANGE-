@@ -1,8 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 import { SUPABASE_CONFIG } from './config.js'
 
-// Initialize Supabase Client
-export const supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+// Initialize Supabase Client (singleton to avoid duplicate GoTrueClient instances during HMR)
+export const supabase =
+  typeof window !== 'undefined' && window.__supabaseInstance
+    ? window.__supabaseInstance
+    : createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
+
+if (typeof window !== 'undefined') {
+  window.__supabaseInstance = supabase
+}
 
 const LOCAL_KEY = 'orange_bookings'
 const OFFERS_LOCAL_KEY = 'orange_offers'

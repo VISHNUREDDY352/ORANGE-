@@ -19,7 +19,7 @@ if (import.meta.env.PROD) {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <LanguageProvider>
-      <HashRouter>
+      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <App />
       </HashRouter>
     </LanguageProvider>
