@@ -4,3 +4,4 @@ android
 ios
 *.local
 .DS_Store
+public_backup/
