@@ -142,6 +142,14 @@ const translations = {
     good: 'Good',
     fair: 'Fair',
     poor: 'Poor',
+    verifiedReviewsOnly: 'Verified customer ratings after service',
+    rateCompletedRepairPrompt: 'Rate a completed repair?',
+    verifyBookingTitle: 'Verify Completed Repair',
+    verifyBookingDesc: 'Enter your Booking ID or registered Phone Number to unlock rating.',
+    verifyAction: 'Verify & Rate',
+    verifyPhonePlaceholder: 'e.g. 9876543210 or BK...',
+    repairNotFound: 'No completed service found for this phone or ID.',
+    repairInProgress: 'Your repair is in progress/confirmed. Rating unlocks once completed by the technician.',
   },
 
   te: {
@@ -276,6 +284,14 @@ const translations = {
     good: 'బాగుంది',
     fair: 'పర్వాలేదు',
     poor: 'సంతృప్తికరం కాదు',
+    verifiedReviewsOnly: 'సర్వీస్ పూర్తయిన తర్వాత ధృవీకరించిన రేటింగ్స్',
+    rateCompletedRepairPrompt: 'పూర్తయిన సర్వీస్‌ను రేట్ చేయాలా?',
+    verifyBookingTitle: 'పూర్తయిన సర్వీస్‌ను ధృవీకరించండి',
+    verifyBookingDesc: 'రేటింగ్ ఇవ్వడానికి మీ బుకింగ్ ID లేదా రిజిస్టర్డ్ ఫోన్ నంబర్ నమోదు చేయండి.',
+    verifyAction: 'ధృవీకరించి రేట్ చేయండి',
+    verifyPhonePlaceholder: 'ఉదా: 9876543210 లేదా BK...',
+    repairNotFound: 'ఈ ఫోన్ నంబర్ లేదా IDతో ఎలాంటి పూర్తయిన సర్వీస్ కనుగొనబడలేదు.',
+    repairInProgress: 'మీ రిపేర్ ప్రస్తుతం నడుస్తోంది/నిర్ధారించబడింది. టెక్నీషియన్ పూర్తి చేసిన తర్వాత రేటింగ్ అందుబాటులోకి వస్తుంది.',
   },
 
   hi: {
@@ -410,6 +426,14 @@ const translations = {
     good: 'अच्छा',
     fair: 'ठीक-ठाक',
     poor: 'असंतोषजनक',
+    verifiedReviewsOnly: 'सर्विस पूर्ण होने के बाद सत्यापित रेटिंग्स',
+    rateCompletedRepairPrompt: 'पूर्ण हुई सर्विस को रेट करें?',
+    verifyBookingTitle: 'पूर्ण हुई रिपेयर सत्यापित करें',
+    verifyBookingDesc: 'रेटिंग देने के लिए अपनी बुकिंग आईडी या पंजीकृत फ़ोन नंबर दर्ज करें।',
+    verifyAction: 'सत्यापित करें और रेट करें',
+    verifyPhonePlaceholder: 'उदा: 9876543210 या BK...',
+    repairNotFound: 'इस फ़ोन या आईडी के लिए कोई पूर्ण सर्विस नहीं मिली।',
+    repairInProgress: 'आपकी सर्विस प्रक्रिया में है। टेक्नीशियन द्वारा पूर्ण होने के बाद रेटिंग उपलब्ध होगी।',
   },
 
   ta: {
@@ -544,6 +568,14 @@ const translations = {
     good: 'நல்லது',
     fair: 'பரவாயில்லை',
     poor: 'போதாது',
+    verifiedReviewsOnly: 'சேவை முடிந்த பிறகு சரிபார்க்கப்பட்ட மதிப்பீடுகள்',
+    rateCompletedRepairPrompt: 'முடிந்த பழுதுபார்ப்பை மதிப்பிடவா?',
+    verifyBookingTitle: 'முடிந்த பழுதுபார்ப்பை சரிபார்க்கவும்',
+    verifyBookingDesc: 'மதிப்பீடு செய்ய உங்கள் முன்பதிவு ஐடி அல்லது பதிவுசெய்த தொலைபேசி எண்ணை உள்ளிடவும்.',
+    verifyAction: 'சரிபார்த்து மதிப்பிடுங்கள்',
+    verifyPhonePlaceholder: 'எ.கா: 9876543210 அல்லது BK...',
+    repairNotFound: 'இந்த எண் அல்லது ஐடிக்கு எந்தவொரு முடிந்த சேவையும் காணப்படவில்லை.',
+    repairInProgress: 'உங்கள் பழுதுபார்ப்பு நடைபெறுகிறது. வல்லுநர் முடித்த பிறகு மதிப்பீடு திறக்கப்படும்.',
   },
 
   kn: {
@@ -678,6 +710,14 @@ const translations = {
     good: 'ಚೆನ್ನಾಗಿದೆ',
     fair: 'ಪರವಾಗಿಲ್ಲ',
     poor: 'ತೃಪ್ತಿಕರವಾಗಿಲ್ಲ',
+    verifiedReviewsOnly: 'ಸೇವೆ ಪೂರ್ಣಗೊಂಡ ನಂತರ ದೃಢೀಕರಿಸಿದ ರೇಟಿಂಗ್ಸ್',
+    rateCompletedRepairPrompt: 'ಪೂರ್ಣಗೊಂಡ ರಿಪೇರಿಯನ್ನು ರೇಟ್ ಮಾಡಿ?',
+    verifyBookingTitle: 'ಪೂರ್ಣಗೊಂಡ ರಿಪೇರಿ ಪರಿಶೀಲಿಸಿ',
+    verifyBookingDesc: 'ರೇಟ್ ಮಾಡಲು ನಿಮ್ಮ ಬುಕಿಂಗ್ ಐಡಿ ಅಥವಾ ನೋಂದಾಯಿತ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ನಮೂದಿಸಿ.',
+    verifyAction: 'ಪರಿಶೀಲಿಸಿ ಮತ್ತು ರೇಟ್ ಮಾಡಿ',
+    verifyPhonePlaceholder: 'ಉದಾ: 9876543210 ಅಥವಾ BK...',
+    repairNotFound: 'ಈ ಫೋನ್ ಅಥವಾ ಐಡಿಗೆ ಯಾವುದೇ ಪೂರ್ಣಗೊಂಡ ಸೇವೆ ಕಂಡುಬಂದಿಲ್ಲ.',
+    repairInProgress: 'ನಿಮ್ಮ ಸೇವೆ ಪ್ರಗತಿಯಲ್ಲಿದೆ. ತಂತ್ರಜ್ಞರು ಪೂರ್ಣಗೊಳಿಸಿದ ನಂತರ ರೇಟಿಂಗ್ ಅನ್ಲಾಕ್ ಆಗುತ್ತದೆ.',
   },
 
   ml: {
@@ -812,6 +852,14 @@ const translations = {
     good: 'നല്ലത്',
     fair: 'തരക്കേടില്ല',
     poor: 'തൃപ്തികരമല്ല',
+    verifiedReviewsOnly: 'സേവനം പൂർത്തിയായ ശേഷമുള്ള സ്ഥിരീകരിച്ച റേറ്റിംഗുകൾ',
+    rateCompletedRepairPrompt: 'പൂർത്തിയായ സർവീസ് റേറ്റ് ചെയ്യണോ?',
+    verifyBookingTitle: 'പൂർത്തിയായ സർവീസ് പരിശോധിക്കുക',
+    verifyBookingDesc: 'റേറ്റ് ചെയ്യാൻ നിങ്ങളുടെ ബുക്കിംഗ് ഐഡിയോ ഫോൺ നമ്പറോ നൽകുക.',
+    verifyAction: 'പരിശോധിച്ച് റേറ്റ് ചെയ്യുക',
+    verifyPhonePlaceholder: 'ഉദാ: 9876543210 അല്ലെങ്കിൽ BK...',
+    repairNotFound: 'ഈ ഫോണിനോ ഐഡിക്കോ പൂർത്തിയായ സേവനമൊന്നും കണ്ടെത്തിയില്ല.',
+    repairInProgress: 'നിങ്ങളുടെ സർവീസ് പുരോഗമിക്കുന്നു. ടെക്നീഷ്യൻ പൂർത്തിയാക്കിയ ശേഷം റേറ്റിംഗ് ലഭ്യമാകും.',
   },
 }
 

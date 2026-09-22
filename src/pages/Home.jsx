@@ -191,6 +191,88 @@ function FeedbackModal({ onClose, prefillAppliance, prefillName, bookingId }) {
   )
 }
 
+function VerifyCompletedModal({ onClose, onVerified }) {
+  const { t } = useI18n()
+  const [query, setQuery] = useState('')
+  const [errorMsg, setErrorMsg] = useState('')
+
+  const handleVerify = (e) => {
+    e.preventDefault()
+    const q = query.trim().toLowerCase()
+    if (!q) return
+
+    const all = getBookings()
+    const cleanQ = q.replace(/\D/g, '')
+
+    const match = all.find((b) => {
+      const matchId = b.id && b.id.toLowerCase() === q
+      const matchPhone = cleanQ.length >= 4 && b.phone && b.phone.replace(/\D/g, '').endsWith(cleanQ)
+      return matchId || matchPhone
+    })
+
+    if (!match) {
+      setErrorMsg(t('repairNotFound'))
+      return
+    }
+
+    if (match.status !== 'completed') {
+      setErrorMsg(t('repairInProgress'))
+      return
+    }
+
+    if (localStorage.getItem('rated_' + match.id)) {
+      setErrorMsg('This completed service has already been rated. Thank you!')
+      return
+    }
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('my_booking_ids') || '[]')
+      if (!existing.includes(match.id)) {
+        existing.unshift(match.id)
+        localStorage.setItem('my_booking_ids', JSON.stringify(existing))
+      }
+    } catch {}
+
+    onVerified(match)
+  }
+
+  return (
+    <div className="lang-modal-overlay" onClick={onClose}>
+      <div className="feedback-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="lang-modal-head">
+          <h3>🔍 {t('verifyBookingTitle')}</h3>
+          <button type="button" className="lang-modal-close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+        <form onSubmit={handleVerify} className="fbm-form">
+          <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '4px 0 14px' }}>
+            {t('verifyBookingDesc')}
+          </p>
+          <label className="field">
+            <span>Phone or Booking ID *</span>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value)
+                setErrorMsg('')
+              }}
+              placeholder={t('verifyPhonePlaceholder')}
+              autoFocus
+              required
+            />
+          </label>
+          {errorMsg && <p className="form-err-msg">{errorMsg}</p>}
+          <div className="btn-row" style={{ marginTop: '16px' }}>
+            <button type="submit" className="btn btn-primary btn-block">
+              {t('verifyAction')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const { t } = useI18n()
   const navigate = useNavigate()
@@ -202,6 +284,7 @@ export default function Home() {
   const [reviews, setReviews] = useState(() => getReviews())
   const [stats, setStats] = useState(() => getRatingStats())
   const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [showVerifyModal, setShowVerifyModal] = useState(false)
   const [feedbackBookingContext, setFeedbackBookingContext] = useState(null)
   const [offers, setOffers] = useState(() => getOffers())
   const timerRef = useRef(null)
@@ -215,19 +298,40 @@ export default function Home() {
 
   const checkAcceptedBooking = () => {
     try {
-      const latestId = localStorage.getItem('latest_booking_id')
-      if (latestId) {
-        const b = getBookings().find((x) => x.id === latestId)
-        if (b && b.status === 'confirmed') {
-          setAcceptedBooking(b)
-          setCompletedBooking(null)
-        } else if (b && b.status === 'completed' && !localStorage.getItem('rated_' + latestId)) {
-          setCompletedBooking(b)
-          setAcceptedBooking(null)
-        } else {
-          setAcceptedBooking(null)
-          setCompletedBooking(null)
+      let rateParam = null
+      try {
+        const hash = window.location.hash || ''
+        const search = window.location.search || ''
+        const match = (hash + search).match(/[?&]rate=([^&#]+)/)
+        if (match && match[1]) {
+          rateParam = decodeURIComponent(match[1])
         }
+      } catch {}
+
+      const allBookings = getBookings()
+      const myIds = JSON.parse(localStorage.getItem('my_booking_ids') || '[]')
+      const latestId = localStorage.getItem('latest_booking_id')
+      if (latestId && !myIds.includes(latestId)) {
+        myIds.unshift(latestId)
+      }
+      if (rateParam && !myIds.includes(rateParam)) {
+        myIds.unshift(rateParam)
+      }
+
+      // Check confirmed booking for top notification banner
+      const confirmed = allBookings.find((x) => myIds.includes(x.id) && x.status === 'confirmed')
+      setAcceptedBooking(confirmed || null)
+
+      // Check completed booking that hasn't been rated yet
+      const completed = allBookings.find(
+        (x) => myIds.includes(x.id) && x.status === 'completed' && !localStorage.getItem('rated_' + x.id)
+      )
+      setCompletedBooking(completed || null)
+
+      // Auto-open modal if user arrived via WhatsApp ?rate= link
+      if (rateParam && completed && completed.id === rateParam && !showFeedbackModal) {
+        setFeedbackBookingContext(completed)
+        setShowFeedbackModal(true)
       }
     } catch {}
   }
@@ -274,15 +378,6 @@ export default function Home() {
     resetTimer()
   }
 
-  const handlePrevVoucher = () => {
-    if (!activeVouchers.length) return
-    setVoucherIndex((i) => (i - 1 + activeVouchers.length) % activeVouchers.length)
-  }
-
-  const handleNextVoucher = () => {
-    if (!activeVouchers.length) return
-    setVoucherIndex((i) => (i + 1) % activeVouchers.length)
-  }
 
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SHOP.mapsQuery)}`
   const ad = displayBanners[adIndex % displayBanners.length] || displayBanners[0]
@@ -405,47 +500,20 @@ export default function Home() {
         </section>
       )}
 
-      {/* Active Discount Vouchers & Festival Coupons Section with Arrow Controls */}
+      {/* Active Discount Vouchers & Festival Coupons Section */}
       {activeVouchers.length > 0 && (
         <section className="section">
           <div className="section-header">
             <h2 className="section-title">🎟️ {t('specialOffers')} & Vouchers</h2>
-            <div className="section-header-actions">
-              {activeVouchers.length > 1 && (
-                <div className="section-arrow-controls">
-                  <button
-                    type="button"
-                    className="nav-arrow-btn"
-                    onClick={handlePrevVoucher}
-                    title="Previous coupon"
-                    aria-label="Previous coupon"
-                  >
-                    ←
-                  </button>
-                  <span className="coupons-counter-pill">
-                    {(voucherIndex % activeVouchers.length) + 1} / {activeVouchers.length}
-                  </span>
-                  <button
-                    type="button"
-                    className="nav-arrow-btn"
-                    onClick={handleNextVoucher}
-                    title="Next coupon"
-                    aria-label="Next coupon"
-                  >
-                    →
-                  </button>
-                </div>
-              )}
-              <button
-                type="button"
-                className="see-all-coupons-btn"
-                onClick={() => setShowAllCoupons(true)}
-                title="See all coupons"
-              >
-                <span>{t('seeAll') || 'See All'}</span>
-                <span className="arrow-sym">→</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              className="see-all-coupons-btn"
+              onClick={() => setShowAllCoupons(true)}
+              title="See all coupons"
+            >
+              <span>{t('seeAll') || 'See All'}</span>
+              <span className="arrow-sym">→</span>
+            </button>
           </div>
 
           <div className="vouchers-carousel-wrap">
@@ -536,16 +604,31 @@ export default function Home() {
               <span className="ssr-star">★</span> <strong>{stats.average.toFixed(1)}</strong> / 5.0 • {stats.count} {t('verifiedReviews')}
             </div>
           </div>
-          <button
-            type="button"
-            className="btn btn-outline btn-sm btn-rate-cta"
-            onClick={() => {
-              setFeedbackBookingContext(null)
-              setShowFeedbackModal(true)
-            }}
-          >
-            ✍️ {t('writeReview')}
-          </button>
+          {completedBooking ? (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm btn-rate-cta"
+              onClick={() => {
+                setFeedbackBookingContext(completedBooking)
+                setShowFeedbackModal(true)
+              }}
+            >
+              ⭐ {t('rateYourService')}
+            </button>
+          ) : (
+            <div className="reviews-header-badges">
+              <span className="verified-reviews-pill">
+                ✓ {t('verifiedReviewsOnly')}
+              </span>
+              <button
+                type="button"
+                className="verify-rate-link"
+                onClick={() => setShowVerifyModal(true)}
+              >
+                {t('rateCompletedRepairPrompt')}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Rating summary bar */}
@@ -694,10 +777,23 @@ export default function Home() {
           onClose={() => {
             setShowFeedbackModal(false)
             setFeedbackBookingContext(null)
+            checkAcceptedBooking()
           }}
           prefillAppliance={feedbackBookingContext?.appliance}
           prefillName={feedbackBookingContext?.name}
           bookingId={feedbackBookingContext?.id}
+        />
+      )}
+
+      {showVerifyModal && (
+        <VerifyCompletedModal
+          onClose={() => setShowVerifyModal(false)}
+          onVerified={(b) => {
+            setShowVerifyModal(false)
+            setCompletedBooking(b)
+            setFeedbackBookingContext(b)
+            setShowFeedbackModal(true)
+          }}
         />
       )}
     </div>

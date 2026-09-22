@@ -1026,7 +1026,9 @@ function Dashboard({ onLogout }) {
                       <a
                         className="btn btn-whatsapp btn-sm"
                         href={`https://wa.me/91${b.phone}?text=${encodeURIComponent(
-                          `Hi ${b.name}, your service booking (${b.id}) for ${t(b.appliance)} on ${b.date} (${b.time}) has been ${b.status === 'completed' ? 'completed' : 'confirmed'} by Orange Refrigeration.\nAddress: ${b.address}\nOur technician will visit your location. For queries call: ${SHOP.phones[0]}`
+                          b.status === 'completed'
+                            ? `Hi ${b.name}, your service booking (${b.id}) for ${t(b.appliance)} has been successfully COMPLETED by Orange Refrigeration! 🎉\n\nHow did our technician do? Please take a moment to rate our service:\n${window.location.origin}/#/?rate=${b.id}\n\nThank you for choosing Orange Refrigeration!`
+                            : `Hi ${b.name}, your service booking (${b.id}) for ${t(b.appliance)} on ${b.date} (${b.time}) has been confirmed by Orange Refrigeration.\nAddress: ${b.address}\nOur technician will visit your location. For queries call: ${SHOP.phones[0]}`
                         )}`}
                         target="_blank"
                         rel="noreferrer"

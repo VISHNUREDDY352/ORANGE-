@@ -98,6 +98,11 @@ export async function addBooking(booking) {
   writeLocal(list)
   try {
     localStorage.setItem('latest_booking_id', record.id)
+    const existing = JSON.parse(localStorage.getItem('my_booking_ids') || '[]')
+    if (!existing.includes(record.id)) {
+      existing.unshift(record.id)
+      localStorage.setItem('my_booking_ids', JSON.stringify(existing))
+    }
   } catch {}
 
   // 2. Cloud sync to Supabase
