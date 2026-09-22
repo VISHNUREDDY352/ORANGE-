@@ -2,7 +2,17 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 import { SHOP, APPLIANCE_KEYS, APPLIANCE_IMAGES } from '../config.js'
-import { getBookings, subscribe, getOffers, subscribeOffers, DEFAULT_OFFERS } from '../store.js'
+import {
+  getBookings,
+  subscribe,
+  getOffers,
+  subscribeOffers,
+  DEFAULT_OFFERS,
+  getReviews,
+  addReview,
+  getRatingStats,
+  subscribeReviews,
+} from '../store.js'
 
 const BRANDS_LIST = [
   { name: 'Samsung', logo: '🌐' },
@@ -78,6 +88,122 @@ function AllCouponsModal({ vouchers, onClose, onSelect }) {
   )
 }
 
+function FeedbackModal({ onClose, prefillAppliance, prefillName, bookingId }) {
+  const { t } = useI18n()
+  const [rating, setRating] = useState(5)
+  const [name, setName] = useState(prefillName || '')
+  const [appliance, setAppliance] = useState(prefillAppliance || 'ac')
+  const [comment, setComment] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+
+  const ratingLabels = {
+    1: `😠 ${t('poor')}`,
+    2: `😐 ${t('fair')}`,
+    3: `🙂 ${t('good')}`,
+    4: `😊 ${t('veryGood')}`,
+    5: `🤩 ${t('excellent')}`,
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!comment.trim() && !name.trim()) return
+    addReview({
+      name: name.trim() || 'Verified Customer',
+      rating,
+      appliance,
+      comment: comment.trim(),
+      bookingId,
+    })
+    if (bookingId) {
+      try {
+        localStorage.setItem('rated_' + bookingId, 'true')
+      } catch {}
+    }
+    setSubmitted(true)
+    setTimeout(() => {
+      onClose()
+    }, 1800)
+  }
+
+  return (
+    <div className="lang-modal-overlay" onClick={onClose}>
+      <div className="feedback-modal-card" onClick={(e) => e.stopPropagation()}>
+        <div className="lang-modal-head">
+          <h3>⭐ {t('leaveFeedback')}</h3>
+          <button type="button" className="lang-modal-close" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        {submitted ? (
+          <div className="fbm-success-box">
+            <div className="fbm-success-ico">🎉</div>
+            <h4>{t('feedbackSuccess')}</h4>
+            <p>{t('feedbackSuccessDesc')}</p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="fbm-form">
+            <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '4px 0 12px' }}>
+              {t('rateServiceDesc')}
+            </p>
+
+            <div className="fbm-stars-wrap">
+              <div className="fbm-stars-row">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    type="button"
+                    key={star}
+                    className={`fbm-star-btn ${rating >= star ? 'active' : ''}`}
+                    onClick={() => setRating(star)}
+                    aria-label={`${star} stars`}
+                  >
+                    ★
+                  </button>
+                ))}
+              </div>
+              <div className="fbm-rating-label">{ratingLabels[rating]}</div>
+            </div>
+
+            <label className="field" style={{ marginTop: '12px' }}>
+              <span>{t('fullName')} *</span>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="e.g. Suresh Kumar"
+                required
+              />
+            </label>
+
+            <label className="field" style={{ marginTop: '10px' }}>
+              <span>{t('applianceType')}</span>
+              <select value={appliance} onChange={(e) => setAppliance(e.target.value)}>
+                <option value="ac">❄️ {t('ac')}</option>
+                <option value="refrigerator">🧊 {t('refrigerator')}</option>
+                <option value="washingMachine">🧺 {t('washingMachine')}</option>
+                <option value="general">🛠️ General Appliance Service</option>
+              </select>
+            </label>
+
+            <label className="field" style={{ marginTop: '10px' }}>
+              <span>{t('leaveFeedback')} *</span>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={3}
+                placeholder={t('feedbackPlaceholder')}
+                required
+              />
+            </label>
+
+            <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: '14px' }}>
+              ⭐ {t('submitFeedback')}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const { t } = useI18n()
   const navigate = useNavigate()
@@ -85,6 +211,11 @@ export default function Home() {
   const [voucherIndex, setVoucherIndex] = useState(0)
   const [showAllCoupons, setShowAllCoupons] = useState(false)
   const [acceptedBooking, setAcceptedBooking] = useState(null)
+  const [completedBooking, setCompletedBooking] = useState(null)
+  const [reviews, setReviews] = useState(() => getReviews())
+  const [stats, setStats] = useState(() => getRatingStats())
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false)
+  const [feedbackBookingContext, setFeedbackBookingContext] = useState(null)
   const [offers, setOffers] = useState(() => getOffers())
   const timerRef = useRef(null)
 
@@ -102,8 +233,13 @@ export default function Home() {
         const b = getBookings().find((x) => x.id === latestId)
         if (b && b.status === 'confirmed') {
           setAcceptedBooking(b)
+          setCompletedBooking(null)
+        } else if (b && b.status === 'completed' && !localStorage.getItem('rated_' + latestId)) {
+          setCompletedBooking(b)
+          setAcceptedBooking(null)
         } else {
           setAcceptedBooking(null)
+          setCompletedBooking(null)
         }
       }
     } catch {}
@@ -121,11 +257,16 @@ export default function Home() {
     checkAcceptedBooking()
     const unsubBookings = subscribe(checkAcceptedBooking)
     const unsubOffers = subscribeOffers(() => setOffers(getOffers()))
+    const unsubReviews = subscribeReviews(() => {
+      setReviews(getReviews())
+      setStats(getRatingStats())
+    })
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
       unsubBookings()
       unsubOffers()
+      unsubReviews()
     }
   }, [displayBanners.length])
 
@@ -166,6 +307,30 @@ export default function Home() {
             </div>
           </div>
           <button type="button" className="aac-close" onClick={() => setAcceptedBooking(null)} aria-label="Close notification">✕</button>
+        </div>
+      )}
+
+      {completedBooking && (
+        <div className="active-completed-rating-card">
+          <div className="acrc-left">
+            <span className="acrc-ico">🎉</span>
+            <div>
+              <div className="acrc-title">{t('serviceCompletedPrompt')}</div>
+              <div className="acrc-desc">
+                {t(completedBooking.appliance)} • {completedBooking.brand || 'Appliance'} ({completedBooking.date})
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm acrc-rate-btn"
+            onClick={() => {
+              setFeedbackBookingContext(completedBooking)
+              setShowFeedbackModal(true)
+            }}
+          >
+            {t('rateNow')}
+          </button>
         </div>
       )}
 
@@ -383,6 +548,75 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Customer Reviews & Ratings */}
+      <section className="section reviews-section">
+        <div className="section-head-row">
+          <div>
+            <h2 className="section-title" style={{ margin: 0 }}>⭐ {t('customerReviews')}</h2>
+            <div className="section-sub-rating">
+              <span className="ssr-star">★</span> <strong>{stats.average.toFixed(1)}</strong> / 5.0 • {stats.count} {t('verifiedReviews')}
+            </div>
+          </div>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm btn-rate-cta"
+            onClick={() => {
+              setFeedbackBookingContext(null)
+              setShowFeedbackModal(true)
+            }}
+          >
+            ✍️ {t('writeReview')}
+          </button>
+        </div>
+
+        {/* Rating summary bar */}
+        <div className="reviews-summary-card">
+          <div className="rsc-left">
+            <div className="rsc-score">{stats.average.toFixed(1)}</div>
+            <div className="rsc-stars">{'★'.repeat(Math.round(stats.average))}</div>
+            <div className="rsc-count">{stats.count} {t('verifiedCustomer')}s</div>
+          </div>
+          <div className="rsc-bars">
+            {[5, 4, 3, 2, 1].map((s) => {
+              const count = stats.breakdown[s] || 0
+              const pct = stats.count ? Math.round((count / stats.count) * 100) : 0
+              return (
+                <div key={s} className="rsc-bar-row">
+                  <span className="rsc-bar-star">{s}★</span>
+                  <div className="rsc-bar-track">
+                    <div className="rsc-bar-fill" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="rsc-bar-pct">{pct}%</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Reviews List */}
+        <div className="reviews-scroll-container">
+          {reviews.map((rev) => (
+            <div key={rev.id} className="home-review-card">
+              <div className="hrc-head">
+                <div className="hrc-user">
+                  <div className="hrc-avatar">{rev.name ? rev.name.charAt(0).toUpperCase() : 'C'}</div>
+                  <div>
+                    <div className="hrc-name">{rev.name}</div>
+                    <div className="hrc-verified">✓ {t('verifiedCustomer')}</div>
+                  </div>
+                </div>
+                <span className="hrc-appliance-badge">
+                  {rev.appliance === 'ac' ? '❄️ AC' : rev.appliance === 'refrigerator' ? '🧊 Fridge' : rev.appliance === 'washingMachine' ? '🧺 Washer' : '🛠️'}
+                </span>
+              </div>
+              <div className="hrc-stars">{'★'.repeat(rev.rating)}{'☆'.repeat(5 - rev.rating)}</div>
+              <p className="hrc-comment">"{rev.comment}"</p>
+              <div className="hrc-date">{rev.date}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Trust & Guarantee Banners */}
       <section className="section">
         <div className="trust-grid">
@@ -473,6 +707,18 @@ export default function Home() {
               appliedVoucher: v,
             },
           })}
+        />
+      )}
+
+      {showFeedbackModal && (
+        <FeedbackModal
+          onClose={() => {
+            setShowFeedbackModal(false)
+            setFeedbackBookingContext(null)
+          }}
+          prefillAppliance={feedbackBookingContext?.appliance}
+          prefillName={feedbackBookingContext?.name}
+          bookingId={feedbackBookingContext?.id}
         />
       )}
     </div>

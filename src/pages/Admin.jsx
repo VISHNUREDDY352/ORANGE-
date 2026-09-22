@@ -13,6 +13,10 @@ import {
   toggleOfferActive,
   resetOffersToDefault,
   subscribeOffers,
+  getReviews,
+  deleteReview,
+  getRatingStats,
+  subscribeReviews,
 } from '../store.js'
 
 function useBookings() {
@@ -24,6 +28,12 @@ function useBookings() {
 function useOffers() {
   const [list, setList] = useState(getOffers())
   useEffect(() => subscribeOffers(() => setList(getOffers())), [])
+  return list
+}
+
+function useReviews() {
+  const [list, setList] = useState(getReviews())
+  useEffect(() => subscribeReviews(() => setList(getReviews())), [])
   return list
 }
 
@@ -497,6 +507,98 @@ function OffersManager() {
   )
 }
 
+function ReviewsManager() {
+  const reviews = useReviews()
+  const stats = getRatingStats()
+  const { t } = useI18n()
+
+  return (
+    <div className="admin-reviews-wrap">
+      <div className="offers-header-row">
+        <div>
+          <h2>⭐ {t('customerReviews')}</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', margin: '4px 0 0' }}>
+            Live customer ratings and feedback submitted across mobile & web.
+          </p>
+        </div>
+      </div>
+
+      {/* Review Metrics Summary Card */}
+      <div className="admin-review-stats-card">
+        <div className="arsc-main">
+          <div className="arsc-score">{stats.average.toFixed(1)}</div>
+          <div className="arsc-stars">{'★'.repeat(Math.round(stats.average))}</div>
+          <div className="arsc-count">{stats.count} Verified Customer Reviews</div>
+        </div>
+        <div className="arsc-bars">
+          {[5, 4, 3, 2, 1].map((s) => {
+            const count = stats.breakdown[s] || 0
+            const pct = stats.count ? Math.round((count / stats.count) * 100) : 0
+            return (
+              <div key={s} className="arsc-bar-row">
+                <span className="arsc-bar-num">{s} ★</span>
+                <div className="arsc-bar-track">
+                  <div className="arsc-bar-fill" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="arsc-bar-val">{count} ({pct}%)</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Reviews List */}
+      <div className="admin-reviews-list">
+        {reviews.length === 0 ? (
+          <div className="empty" style={{ padding: '30px' }}>No customer reviews yet.</div>
+        ) : (
+          reviews.map((r) => (
+            <div key={r.id} className="admin-review-item">
+              <div className="ari-head">
+                <div className="ari-user">
+                  <div className="ari-avatar">{r.name ? r.name.charAt(0).toUpperCase() : 'C'}</div>
+                  <div>
+                    <div className="ari-name">{r.name}</div>
+                    <div className="ari-meta">
+                      <span className="badge badge-confirmed" style={{ fontSize: '10px', padding: '2px 6px' }}>✓ Verified</span>
+                      <span style={{ fontSize: '12px', color: 'var(--muted)' }}>• {r.date}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="ari-appliance">
+                  {r.appliance === 'ac' ? '❄️ AC' : r.appliance === 'refrigerator' ? '🧊 Fridge' : r.appliance === 'washingMachine' ? '🧺 Washer' : '🛠️ General'}
+                </div>
+              </div>
+
+              <div className="ari-stars">
+                {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
+                <span className="ari-score-label">({r.rating}/5)</span>
+              </div>
+
+              <p className="ari-comment">{r.comment || 'No comment text'}</p>
+
+              <div className="ari-foot">
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => {
+                    if (window.confirm(`Delete review from "${r.name}"?`)) {
+                      deleteReview(r.id)
+                    }
+                  }}
+                  title="Delete review"
+                >
+                  🗑️ {t('deleteReview')}
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
 // Pleasant Web Audio notification chime (E-Major arpeggio)
 export function playNotificationSound() {
   try {
@@ -540,6 +642,7 @@ function Dashboard({ onLogout }) {
   const navigate = useNavigate()
   const bookings = useBookings()
   const offers = useOffers()
+  const reviews = useReviews()
   const [activeTab, setActiveTab] = useState('bookings')
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
@@ -733,10 +836,19 @@ function Dashboard({ onLogout }) {
         >
           📢 Ads & Offers ({offers.filter((o) => o.active).length} Active)
         </button>
+        <button
+          type="button"
+          className={`admin-tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
+          onClick={() => setActiveTab('reviews')}
+        >
+          ⭐ Reviews ({reviews.length})
+        </button>
       </div>
 
       {activeTab === 'offers' ? (
         <OffersManager />
+      ) : activeTab === 'reviews' ? (
+        <ReviewsManager />
       ) : (
         <>
           <div className="admin-controls-row">
@@ -870,19 +982,29 @@ function Dashboard({ onLogout }) {
                       )}
 
                       {/* COMPLETED: Service completed, with Reopen option */}
-                      {b.status === 'completed' && (
-                        <div className="bc-done-indicator">
-                          <span className="bc-done-text">✓ {t('serviceCompleted')}</span>
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-action-reopen"
-                            onClick={() => updateBookingStatus(b.id, 'confirmed')}
-                            title="Reopen booking back to Confirmed"
-                          >
-                            ↺ {t('reopen')}
-                          </button>
-                        </div>
-                      )}
+                      {b.status === 'completed' && (() => {
+                        const rev = reviews.find((r) => r.bookingId === b.id || (r.name && b.name && r.name.toLowerCase() === b.name.toLowerCase()))
+                        return (
+                          <div className="bc-completed-wrap">
+                            <div className="bc-done-indicator">
+                              <span className="bc-done-text">✓ {t('serviceCompleted')}</span>
+                              <button
+                                type="button"
+                                className="btn btn-sm btn-action-reopen"
+                                onClick={() => updateBookingStatus(b.id, 'confirmed')}
+                                title="Reopen booking back to Confirmed"
+                              >
+                                ↺ {t('reopen')}
+                              </button>
+                            </div>
+                            {rev && (
+                              <div className="bc-review-badge">
+                                <span style={{ color: '#f59e0b', fontWeight: 'bold' }}>{'★'.repeat(rev.rating)}</span> "{rev.comment}"
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
 
                       {/* CANCELLED: Booking cancelled, with Restore option */}
                       {b.status === 'cancelled' && (

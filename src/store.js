@@ -456,3 +456,214 @@ export function subscribeOffers(callback) {
     }
   }
 }
+
+// ==========================================
+// CUSTOMER REVIEWS & RATINGS (Cloud Synced)
+// ==========================================
+const REVIEWS_LOCAL_KEY = 'orange_customer_reviews'
+const REVIEWS_SYNC_ID = '__APP_SYNC_REVIEWS__'
+
+const DEFAULT_REVIEWS = [
+  {
+    id: 'rev_1',
+    name: 'Suresh Kumar',
+    rating: 5,
+    appliance: 'ac',
+    comment: 'Excellent AC master service! Technician arrived within 45 mins. Cooling is ice-cold now and pricing is very honest.',
+    date: '2026-09-20',
+    verified: true,
+    createdAt: 1726830000000,
+  },
+  {
+    id: 'rev_2',
+    name: 'Priya Sharma',
+    rating: 5,
+    appliance: 'refrigerator',
+    comment: 'My double-door fridge stopped cooling suddenly. Orange technician diagnosed the gas leak and fixed it on the spot. Highly recommend!',
+    date: '2026-09-18',
+    verified: true,
+    createdAt: 1726650000000,
+  },
+  {
+    id: 'rev_3',
+    name: 'Venkatesh Rao',
+    rating: 5,
+    appliance: 'washingMachine',
+    comment: 'Very professional front-load drum repair. Clean work, genuine spare parts used with warranty.',
+    date: '2026-09-15',
+    verified: true,
+    createdAt: 1726390000000,
+  },
+  {
+    id: 'rev_4',
+    name: 'Ananya Reddy',
+    rating: 4,
+    appliance: 'ac',
+    comment: 'Good experience with split AC jet pump cleaning. Very polite technician and left the room completely spotless.',
+    date: '2026-09-10',
+    verified: true,
+    createdAt: 1725960000000,
+  },
+]
+
+async function syncReviewsToCloud(list) {
+  try {
+    const payload = JSON.stringify(list)
+    await supabase.from('bookings').upsert([{
+      id: REVIEWS_SYNC_ID,
+      name: payload,
+      phone: 'SYSTEM_REVIEWS',
+      address: 'Cloud Synced Customer Reviews',
+      appliance: 'reviews',
+      brand: 'system',
+      issue: 'Customer ratings and feedback collection',
+      date: '2026-01-01',
+      time: '00:00',
+      voucher: '',
+      status: 'system',
+      created_at: Date.now(),
+    }])
+  } catch (err) {
+    console.warn('Failed to sync reviews to Supabase cloud:', err)
+  }
+}
+
+async function fetchRemoteReviews() {
+  try {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('id', REVIEWS_SYNC_ID)
+      .limit(1)
+
+    if (!error && data && data.length > 0 && data[0].name) {
+      try {
+        const parsed = JSON.parse(data[0].name)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localStorage.setItem(REVIEWS_LOCAL_KEY, JSON.stringify(parsed))
+          window.dispatchEvent(new Event('reviews-updated'))
+          return parsed
+        }
+      } catch (e) {
+        console.warn('Failed to parse remote reviews:', e)
+      }
+    } else {
+      const current = readReviewsLocal()
+      await syncReviewsToCloud(current)
+      return current
+    }
+  } catch (err) {
+    console.warn('Failed to fetch remote reviews from cloud:', err)
+  }
+  return readReviewsLocal()
+}
+
+function readReviewsLocal() {
+  try {
+    const raw = localStorage.getItem(REVIEWS_LOCAL_KEY)
+    if (!raw) return DEFAULT_REVIEWS
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_REVIEWS
+  } catch {
+    return DEFAULT_REVIEWS
+  }
+}
+
+function writeReviewsLocal(list) {
+  try {
+    localStorage.setItem(REVIEWS_LOCAL_KEY, JSON.stringify(list))
+  } catch (err) {
+    console.error('Failed to persist reviews:', err)
+  }
+  window.dispatchEvent(new Event('reviews-updated'))
+  try {
+    syncChannel?.postMessage({ type: 'reviews-updated' })
+  } catch {}
+  syncReviewsToCloud(list)
+}
+
+export function getReviews() {
+  return readReviewsLocal().sort((a, b) => b.createdAt - a.createdAt)
+}
+
+export function addReview({ name, rating, appliance, comment, bookingId }) {
+  const list = readReviewsLocal()
+  const today = new Date().toISOString().slice(0, 10)
+  const newReview = {
+    id: 'rev_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
+    name: name?.trim() || 'Verified Customer',
+    rating: Number(rating) || 5,
+    appliance: appliance || 'general',
+    comment: comment?.trim() || '',
+    date: today,
+    verified: true,
+    bookingId: bookingId || null,
+    createdAt: Date.now(),
+  }
+  list.unshift(newReview)
+  writeReviewsLocal(list)
+  return newReview
+}
+
+export function deleteReview(id) {
+  const list = readReviewsLocal().filter((r) => r.id !== id)
+  writeReviewsLocal(list)
+}
+
+export function getRatingStats() {
+  const list = readReviewsLocal()
+  if (!list.length) return { average: 5.0, count: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } }
+  const breakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  let sum = 0
+  list.forEach((r) => {
+    const score = Math.max(1, Math.min(5, Math.round(r.rating || 5)))
+    breakdown[score] = (breakdown[score] || 0) + 1
+    sum += score
+  })
+  const average = Number((sum / list.length).toFixed(1))
+  return { average, count: list.length, breakdown }
+}
+
+export function subscribeReviews(callback) {
+  const localHandler = () => callback()
+  const storageHandler = (e) => {
+    if (!e || e.key === REVIEWS_LOCAL_KEY) callback()
+  }
+  const channelHandler = (e) => {
+    if (e.data?.type === 'reviews-updated') callback()
+  }
+
+  window.addEventListener('reviews-updated', localHandler)
+  window.addEventListener('storage', storageHandler)
+  syncChannel?.addEventListener('message', channelHandler)
+
+  fetchRemoteReviews().then(() => callback())
+
+  let reviewsDbChannel = null
+  try {
+    reviewsDbChannel = supabase
+      .channel('supabase-realtime-reviews')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        async (payload) => {
+          if (payload.new?.id === REVIEWS_SYNC_ID || payload.old?.id === REVIEWS_SYNC_ID) {
+            await fetchRemoteReviews()
+            callback()
+          }
+        }
+      )
+      .subscribe()
+  } catch (err) {
+    console.warn('Supabase realtime reviews listener error:', err)
+  }
+
+  return () => {
+    window.removeEventListener('reviews-updated', localHandler)
+    window.removeEventListener('storage', storageHandler)
+    syncChannel?.removeEventListener('message', channelHandler)
+    if (reviewsDbChannel) {
+      supabase.removeChannel(reviewsDbChannel)
+    }
+  }
+}
