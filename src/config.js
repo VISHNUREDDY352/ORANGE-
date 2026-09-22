@@ -42,3 +42,9 @@ export const TIME_SLOTS = [
 ]
 
 export const BOOKING_STATUSES = ['pending', 'confirmed', 'completed', 'cancelled']
+
+// Supabase Cloud Backend Configuration
+export const SUPABASE_CONFIG = {
+  url: 'https://sqnvymijhrwtjbpgqehh.supabase.co',
+  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNxbnZ5bWlqaHJ3dGpicGdxZWhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjczNzcsImV4cCI6MjEwNTYwMzM3N30._PxYZeJIkpo11uldNlFRS-6_gRj0X0Oc92Xa-2eSOp0',
+}

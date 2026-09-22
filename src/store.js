@@ -1,4 +1,8 @@
-// High-performance reactive store backed by LocalStorage with multi-tab & multi-window BroadcastChannel sync.
+import { createClient } from '@supabase/supabase-js'
+import { SUPABASE_CONFIG } from './config.js'
+
+// Initialize Supabase Client
+export const supabase = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey)
 
 const LOCAL_KEY = 'orange_bookings'
 const OFFERS_LOCAL_KEY = 'orange_offers'
@@ -7,6 +11,23 @@ const OFFERS_LOCAL_KEY = 'orange_offers'
 const syncChannel = typeof window !== 'undefined' && 'BroadcastChannel' in window
   ? new BroadcastChannel('orange_services_sync')
   : null
+
+function normalizeFromDb(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    phone: row.phone,
+    address: row.address,
+    appliance: row.appliance,
+    brand: row.brand || '',
+    issue: row.issue || '',
+    date: row.date,
+    time: row.time,
+    voucher: row.voucher || '',
+    status: row.status || 'pending',
+    createdAt: Number(row.created_at) || Date.now(),
+  }
+}
 
 function readLocal() {
   try {
@@ -29,38 +50,98 @@ function writeLocal(list) {
   } catch {}
 }
 
+// Fetch remote bookings from Supabase Cloud
+async function fetchRemoteBookings() {
+  try {
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (!error && Array.isArray(data)) {
+      const remoteList = data.map(normalizeFromDb)
+      writeLocal(remoteList)
+      return remoteList
+    }
+  } catch (err) {
+    console.warn('Supabase fetch error, using local data:', err)
+  }
+  return readLocal()
+}
+
 export function getBookings() {
   return readLocal().sort((a, b) => b.createdAt - a.createdAt)
 }
 
-export function addBooking(booking) {
-  const list = readLocal()
+export async function addBooking(booking) {
+  const id = 'BK' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase()
+  const now = Date.now()
   const record = {
-    id: 'BK' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase(),
+    id,
     status: 'pending',
-    createdAt: Date.now(),
+    createdAt: now,
     ...booking,
   }
-  list.push(record)
+
+  // 1. Instant local write for 0ms UI response
+  const list = readLocal()
+  list.unshift(record)
   writeLocal(list)
   try {
     localStorage.setItem('latest_booking_id', record.id)
   } catch {}
+
+  // 2. Cloud sync to Supabase
+  try {
+    await supabase.from('bookings').insert([{
+      id,
+      name: record.name,
+      phone: record.phone,
+      address: record.address,
+      appliance: record.appliance,
+      brand: record.brand || '',
+      issue: record.issue || '',
+      date: record.date,
+      time: record.time,
+      voucher: record.voucher || '',
+      status: record.status,
+      created_at: now,
+    }])
+  } catch (err) {
+    console.warn('Failed to insert booking to Supabase cloud:', err)
+  }
+
   return record
 }
 
-export function updateBookingStatus(id, status) {
+export async function updateBookingStatus(id, status) {
+  // 1. Instant local update
   const list = readLocal()
   const idx = list.findIndex((b) => b.id === id)
   if (idx !== -1) {
     list[idx].status = status
     writeLocal(list)
   }
+
+  // 2. Cloud update to Supabase
+  try {
+    await supabase.from('bookings').update({ status }).eq('id', id)
+  } catch (err) {
+    console.warn('Failed to update status in Supabase:', err)
+  }
 }
 
-export function deleteBooking(id) {
+export async function deleteBooking(id) {
+  // 1. Instant local removal
   const list = readLocal().filter((b) => b.id !== id)
   writeLocal(list)
+
+  // 2. Cloud deletion in Supabase
+  try {
+    await supabase.from('bookings').delete().eq('id', id)
+  } catch (err) {
+    console.warn('Failed to delete booking in Supabase:', err)
+  }
 }
 
 export function subscribe(callback) {
@@ -80,10 +161,34 @@ export function subscribe(callback) {
   window.addEventListener('storage', storageHandler)
   syncChannel?.addEventListener('message', channelHandler)
 
+  // Initial cloud fetch to get latest bookings
+  fetchRemoteBookings().then(() => callback())
+
+  // Real-time Supabase PostgreSQL change listener (WebSocket)
+  let dbChannel = null
+  try {
+    dbChannel = supabase
+      .channel('supabase-realtime-bookings')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'bookings' },
+        async () => {
+          await fetchRemoteBookings()
+          callback()
+        }
+      )
+      .subscribe()
+  } catch (err) {
+    console.warn('Supabase realtime listener setup error:', err)
+  }
+
   return () => {
     window.removeEventListener('bookings-updated', localHandler)
     window.removeEventListener('storage', storageHandler)
     syncChannel?.removeEventListener('message', channelHandler)
+    if (dbChannel) {
+      supabase.removeChannel(dbChannel)
+    }
   }
 }
 
