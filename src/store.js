@@ -174,10 +174,11 @@ export function subscribe(callback) {
   fetchRemoteBookings().then(() => callback())
 
   // Real-time Supabase PostgreSQL change listener (WebSocket)
+  const channelName = 'supabase-realtime-bookings-' + Math.random().toString(36).slice(2, 7)
   let dbChannel = null
   try {
     dbChannel = supabase
-      .channel('supabase-realtime-bookings')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'bookings' },
@@ -191,10 +192,35 @@ export function subscribe(callback) {
     console.warn('Supabase realtime listener setup error:', err)
   }
 
+  // Fast auto-poll fallback every 3.5s for instant sync across devices
+  const pollTimer = setInterval(async () => {
+    try {
+      await fetchRemoteBookings()
+      callback()
+    } catch {}
+  }, 3500)
+
+  // Instant refresh on focus or app foregrounding
+  const focusHandler = async () => {
+    await fetchRemoteBookings()
+    callback()
+  }
+  const visibilityHandler = () => {
+    if (document.visibilityState === 'visible') {
+      focusHandler()
+    }
+  }
+
+  window.addEventListener('focus', focusHandler)
+  document.addEventListener('visibilitychange', visibilityHandler)
+
   return () => {
     window.removeEventListener('bookings-updated', localHandler)
     window.removeEventListener('storage', storageHandler)
     syncChannel?.removeEventListener('message', channelHandler)
+    clearInterval(pollTimer)
+    window.removeEventListener('focus', focusHandler)
+    document.removeEventListener('visibilitychange', visibilityHandler)
     if (dbChannel) {
       supabase.removeChannel(dbChannel)
     }
@@ -428,10 +454,11 @@ export function subscribeOffers(callback) {
   fetchRemoteOffers().then(() => callback())
 
   // 2. Real-time Supabase listener for offers synced across devices
+  const channelName = 'supabase-realtime-offers-' + Math.random().toString(36).slice(2, 7)
   let offersDbChannel = null
   try {
     offersDbChannel = supabase
-      .channel('supabase-realtime-offers')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'bookings' },
@@ -447,10 +474,47 @@ export function subscribeOffers(callback) {
     console.warn('Supabase realtime offers listener error:', err)
   }
 
+  // 3. Fast auto-poll fallback every 3 seconds for instant cross-device updates
+  const pollTimer = setInterval(async () => {
+    try {
+      const prevRaw = localStorage.getItem(OFFERS_LOCAL_KEY)
+      const { data } = await supabase
+        .from('bookings')
+        .select('name')
+        .eq('id', OFFERS_SYNC_ID)
+        .limit(1)
+      if (data && data[0]?.name && data[0].name !== prevRaw) {
+        const parsed = JSON.parse(data[0].name)
+        if (Array.isArray(parsed)) {
+          localStorage.setItem(OFFERS_LOCAL_KEY, JSON.stringify(parsed))
+          window.dispatchEvent(new Event('offers-updated'))
+          callback()
+        }
+      }
+    } catch {}
+  }, 3000)
+
+  // 4. Instant update on window focus or app foregrounding
+  const focusHandler = async () => {
+    await fetchRemoteOffers()
+    callback()
+  }
+  const visibilityHandler = () => {
+    if (document.visibilityState === 'visible') {
+      focusHandler()
+    }
+  }
+
+  window.addEventListener('focus', focusHandler)
+  document.addEventListener('visibilitychange', visibilityHandler)
+
   return () => {
     window.removeEventListener('offers-updated', localHandler)
     window.removeEventListener('storage', storageHandler)
     syncChannel?.removeEventListener('message', channelHandler)
+    clearInterval(pollTimer)
+    window.removeEventListener('focus', focusHandler)
+    document.removeEventListener('visibilitychange', visibilityHandler)
     if (offersDbChannel) {
       supabase.removeChannel(offersDbChannel)
     }
@@ -639,10 +703,11 @@ export function subscribeReviews(callback) {
 
   fetchRemoteReviews().then(() => callback())
 
+  const channelName = 'supabase-realtime-reviews-' + Math.random().toString(36).slice(2, 7)
   let reviewsDbChannel = null
   try {
     reviewsDbChannel = supabase
-      .channel('supabase-realtime-reviews')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'bookings' },
@@ -658,12 +723,49 @@ export function subscribeReviews(callback) {
     console.warn('Supabase realtime reviews listener error:', err)
   }
 
+  // Auto-poll fallback every 3.5 seconds
+  const pollTimer = setInterval(async () => {
+    try {
+      const prevRaw = localStorage.getItem(REVIEWS_LOCAL_KEY)
+      const { data } = await supabase
+        .from('bookings')
+        .select('name')
+        .eq('id', REVIEWS_SYNC_ID)
+        .limit(1)
+      if (data && data[0]?.name && data[0].name !== prevRaw) {
+        const parsed = JSON.parse(data[0].name)
+        if (Array.isArray(parsed)) {
+          localStorage.setItem(REVIEWS_LOCAL_KEY, JSON.stringify(parsed))
+          window.dispatchEvent(new Event('reviews-updated'))
+          callback()
+        }
+      }
+    } catch {}
+  }, 3500)
+
+  const focusHandler = async () => {
+    await fetchRemoteReviews()
+    callback()
+  }
+  const visibilityHandler = () => {
+    if (document.visibilityState === 'visible') {
+      focusHandler()
+    }
+  }
+
+  window.addEventListener('focus', focusHandler)
+  document.addEventListener('visibilitychange', visibilityHandler)
+
   return () => {
     window.removeEventListener('reviews-updated', localHandler)
     window.removeEventListener('storage', storageHandler)
     syncChannel?.removeEventListener('message', channelHandler)
+    clearInterval(pollTimer)
+    window.removeEventListener('focus', focusHandler)
+    document.removeEventListener('visibilitychange', visibilityHandler)
     if (reviewsDbChannel) {
       supabase.removeChannel(reviewsDbChannel)
     }
   }
 }
+

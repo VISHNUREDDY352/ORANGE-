@@ -240,20 +240,27 @@ export default function Home() {
   }
 
   useEffect(() => {
-    resetTimer()
     checkAcceptedBooking()
     const unsubBookings = subscribe(checkAcceptedBooking)
-    const unsubOffers = subscribeOffers(() => setOffers(getOffers()))
+    const unsubOffers = subscribeOffers(() => {
+      setOffers(getOffers())
+    })
     const unsubReviews = subscribeReviews(() => {
       setReviews(getReviews())
       setStats(getRatingStats())
     })
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
       unsubBookings()
       unsubOffers()
       unsubReviews()
+    }
+  }, [])
+
+  useEffect(() => {
+    resetTimer()
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
     }
   }, [displayBanners.length])
 
