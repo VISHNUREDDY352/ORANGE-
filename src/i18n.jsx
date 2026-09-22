@@ -94,6 +94,13 @@ const translations = {
     confirmed: 'Confirmed',
     completed: 'Completed',
     cancelled: 'Cancelled',
+    accept: 'Accept',
+    cancelBooking: 'Cancel',
+    markComplete: 'Complete',
+    reopen: 'Reopen',
+    restore: 'Restore',
+    serviceCompleted: 'Service Completed',
+    bookingCancelled: 'Booking Cancelled',
 
     // Banners
     topTickerBanner: '🔥 Fast & Reliable AC & Appliance Servicing! • Free Inspection',
@@ -196,6 +203,13 @@ const translations = {
     confirmed: 'నిర్ధారించబడింది',
     completed: 'పూర్తయింది',
     cancelled: 'రద్దు చేయబడింది',
+    accept: 'అంగీకరించు',
+    cancelBooking: 'రద్దు చేయి',
+    markComplete: 'పూర్తయింది',
+    reopen: 'తిరిగి తెరవండి',
+    restore: 'పునరుద్ధరించు',
+    serviceCompleted: 'సర్వీస్ పూర్తయింది',
+    bookingCancelled: 'బుకింగ్ రద్దు చేయబడింది',
 
     // Banners
     topTickerBanner: '🔥 ప్రొఫెషనల్ ఏసీ & హోమ్ అప్లయన్స్ సర్వీసింగ్! • ఉచిత పరిశీలన',
@@ -298,6 +312,13 @@ const translations = {
     confirmed: 'स्वीकृत (Confirmed)',
     completed: 'पूर्ण (Completed)',
     cancelled: 'रद्द (Cancelled)',
+    accept: 'स्वीकार करें',
+    cancelBooking: 'रद्द करें',
+    markComplete: 'पूर्ण करें',
+    reopen: 'पुनः खोलें',
+    restore: 'पुनर्स्थापित करें',
+    serviceCompleted: 'सर्विस पूर्ण हुई',
+    bookingCancelled: 'बुकिंग रद्द कर दी गई',
 
     // Banners
     topTickerBanner: '🔥 तेज़ और विश्वसनीय एसी व उपकरण सर्विसिंग! • निःशुल्क निरीक्षण',
@@ -400,6 +421,13 @@ const translations = {
     confirmed: 'உறுதிசெய்யப்பட்டது (Confirmed)',
     completed: 'நிறைவடைந்தது (Completed)',
     cancelled: 'ரத்துசெய்யப்பட்டது (Cancelled)',
+    accept: 'ஏற்றுக்கொள்',
+    cancelBooking: 'ரத்துசெய்',
+    markComplete: 'முடிந்தது',
+    reopen: 'மீண்டும் திறக்க',
+    restore: 'மீட்டமை',
+    serviceCompleted: 'சேவை முடிந்தது',
+    bookingCancelled: 'முன்பதிவு ரத்து செய்யப்பட்டது',
 
     // Banners
     topTickerBanner: '🔥 வேகமான மற்றும் நம்பகமான ஏசி & சாதன பழுதுபார்த்தல்! • இலவச பரிசோதனை',
@@ -502,6 +530,13 @@ const translations = {
     confirmed: 'ದೃಢೀಕರಿಸಲಾಗಿದೆ (Confirmed)',
     completed: 'ಪೂರ್ಣಗೊಂಡಿದೆ (Completed)',
     cancelled: 'ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ (Cancelled)',
+    accept: 'ಸ್ವೀಕರಿಸಿ',
+    cancelBooking: 'ರದ್ದುಮಾಡಿ',
+    markComplete: 'ಪೂರ್ಣಗೊಳಿಸಿ',
+    reopen: 'ಮತ್ತೆ ತೆರೆಯಿರಿ',
+    restore: 'ಮರುಸ್ಥಾಪಿಸಿ',
+    serviceCompleted: 'ಸೇವೆ ಪೂರ್ಣಗೊಂಡಿದೆ',
+    bookingCancelled: 'ಬುಕಿಂಗ್ ರದ್ದುಗೊಳಿಸಲಾಗಿದೆ',
 
     // Banners
     topTickerBanner: '🔥 ವೇಗದ ಮತ್ತು ವಿಶ್ವಾಸಾರ್ಹ ಎಸಿ & ಗೃಹೋಪಯೋಗಿ ಸೇವೆಗಳು! • ಉಚಿತ ತಪಾಸಣೆ',
@@ -604,6 +639,13 @@ const translations = {
     confirmed: 'സ്ഥിരീകരിച്ചു (Confirmed)',
     completed: 'പൂർത്തിയായി (Completed)',
     cancelled: 'റദ്ദാക്കി (Cancelled)',
+    accept: 'സ്വീകരിക്കുക',
+    cancelBooking: 'റദ്ദാക്കുക',
+    markComplete: 'പൂർത്തിയാക്കുക',
+    reopen: 'വീണ്ടും തുറക്കുക',
+    restore: 'പുനഃസ്ഥാപിക്കുക',
+    serviceCompleted: 'സർവീസ് പൂർത്തിയായി',
+    bookingCancelled: 'ബുക്കിംഗ് റദ്ദാക്കി',
 
     // Banners
     topTickerBanner: '🔥 വേഗമേറിയതും വിശ്വസനീയവുമായ എസി & അപ്ലയൻസ് സർവീസിംഗ്! • സൗജന്യ പരിശോധന',

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
-import { SHOP, ADMIN_PASSWORD, BOOKING_STATUSES } from '../config.js'
+import { SHOP, ADMIN_PASSWORD } from '../config.js'
 import {
   getBookings,
   updateBookingStatus,
@@ -677,24 +677,44 @@ function Dashboard({ onLogout }) {
         </div>
       )}
 
-      {/* Quick Statistics Bar */}
+      {/* Quick Statistics Bar - Clickable to Filter */}
       <div className="admin-stats-grid">
-        <div className="admin-stat-card">
+        <button
+          type="button"
+          className={`admin-stat-card ${filter === 'all' ? 'active-filter' : ''}`}
+          onClick={() => setFilter('all')}
+          title="Show all bookings"
+        >
           <div className="asc-num">{stats.total}</div>
           <div className="asc-label">{t('all') || 'Total'}</div>
-        </div>
-        <div className="admin-stat-card stat-pending">
+        </button>
+        <button
+          type="button"
+          className={`admin-stat-card stat-pending ${filter === 'pending' ? 'active-filter' : ''}`}
+          onClick={() => setFilter('pending')}
+          title="Filter pending bookings"
+        >
           <div className="asc-num">{stats.pending}</div>
           <div className="asc-label">{t('pending')}</div>
-        </div>
-        <div className="admin-stat-card stat-confirmed">
+        </button>
+        <button
+          type="button"
+          className={`admin-stat-card stat-confirmed ${filter === 'confirmed' ? 'active-filter' : ''}`}
+          onClick={() => setFilter('confirmed')}
+          title="Filter confirmed bookings"
+        >
           <div className="asc-num">{stats.confirmed}</div>
           <div className="asc-label">{t('confirmed')}</div>
-        </div>
-        <div className="admin-stat-card stat-completed">
+        </button>
+        <button
+          type="button"
+          className={`admin-stat-card stat-completed ${filter === 'completed' ? 'active-filter' : ''}`}
+          onClick={() => setFilter('completed')}
+          title="Filter completed bookings"
+        >
           <div className="asc-num">{stats.completed}</div>
           <div className="asc-label">{t('completed')}</div>
-        </div>
+        </button>
       </div>
 
       {/* Admin Tab Switcher */}
@@ -727,19 +747,45 @@ function Dashboard({ onLogout }) {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="🔍 Search bookings by name, phone, ID, or area..."
             />
-            <div className="filter-row">
-              <label>
-                <span>{t('filterStatus')}:</span>
-                <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-                  <option value="all">{t('all')}</option>
-                  {BOOKING_STATUSES.map((s) => (
-                    <option key={s} value={s}>{t(s)}</option>
-                  ))}
-                </select>
-              </label>
+            <div className="filter-chips-row">
+              <button
+                type="button"
+                className={`filter-chip ${filter === 'all' ? 'active' : ''}`}
+                onClick={() => setFilter('all')}
+              >
+                {t('all')} ({bookings.length})
+              </button>
+              <button
+                type="button"
+                className={`filter-chip ${filter === 'pending' ? 'active' : ''}`}
+                onClick={() => setFilter('pending')}
+              >
+                {t('pending')} ({stats.pending})
+              </button>
+              <button
+                type="button"
+                className={`filter-chip ${filter === 'confirmed' ? 'active' : ''}`}
+                onClick={() => setFilter('confirmed')}
+              >
+                {t('confirmed')} ({stats.confirmed})
+              </button>
+              <button
+                type="button"
+                className={`filter-chip ${filter === 'completed' ? 'active' : ''}`}
+                onClick={() => setFilter('completed')}
+              >
+                {t('completed')} ({stats.completed})
+              </button>
+              <button
+                type="button"
+                className={`filter-chip ${filter === 'cancelled' ? 'active' : ''}`}
+                onClick={() => setFilter('cancelled')}
+              >
+                {t('cancelled')} ({bookings.filter((b) => b.status === 'cancelled').length})
+              </button>
               {search && (
                 <button type="button" className="btn btn-outline btn-sm" onClick={() => setSearch('')}>
-                  Clear Search
+                  ✕ Clear
                 </button>
               )}
             </div>
@@ -770,43 +816,115 @@ function Dashboard({ onLogout }) {
                   </div>
 
                   <div className="bc-actions">
-                    <label>
-                      <span>{t('updateStatus')}:</span>
-                      <select
-                        value={b.status}
-                        onChange={(e) => {
-                          const newStatus = e.target.value
-                          updateBookingStatus(b.id, newStatus)
-                        }}
+                    <div className="bc-status-btns">
+                      {/* PENDING: Admin can Accept or Cancel */}
+                      {b.status === 'pending' && (
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-action-accept"
+                            onClick={() => updateBookingStatus(b.id, 'confirmed')}
+                            title="Accept and confirm this booking"
+                          >
+                            ✓ {t('accept')}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-action-cancel"
+                            onClick={() => {
+                              if (window.confirm(`Cancel booking ${b.id} for ${b.name}?`)) {
+                                updateBookingStatus(b.id, 'cancelled')
+                              }
+                            }}
+                            title="Cancel booking"
+                          >
+                            ✕ {t('cancelBooking')}
+                          </button>
+                        </>
+                      )}
+
+                      {/* CONFIRMED: Admin can Complete or Cancel */}
+                      {b.status === 'confirmed' && (
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-action-complete"
+                            onClick={() => updateBookingStatus(b.id, 'completed')}
+                            title="Mark this service as completed"
+                          >
+                            ✓ {t('markComplete')}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-action-cancel"
+                            onClick={() => {
+                              if (window.confirm(`Cancel booking ${b.id} for ${b.name}?`)) {
+                                updateBookingStatus(b.id, 'cancelled')
+                              }
+                            }}
+                            title="Cancel booking"
+                          >
+                            ✕ {t('cancelBooking')}
+                          </button>
+                        </>
+                      )}
+
+                      {/* COMPLETED: Service completed, with Reopen option */}
+                      {b.status === 'completed' && (
+                        <div className="bc-done-indicator">
+                          <span className="bc-done-text">✓ {t('serviceCompleted')}</span>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-action-reopen"
+                            onClick={() => updateBookingStatus(b.id, 'confirmed')}
+                            title="Reopen booking back to Confirmed"
+                          >
+                            ↺ {t('reopen')}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* CANCELLED: Booking cancelled, with Restore option */}
+                      {b.status === 'cancelled' && (
+                        <div className="bc-done-indicator">
+                          <span className="bc-cancelled-text">✕ {t('bookingCancelled')}</span>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-action-reopen"
+                            onClick={() => updateBookingStatus(b.id, 'pending')}
+                            title="Restore booking back to Pending"
+                          >
+                            ↺ {t('restore')}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="bc-utility-btns">
+                      <a
+                        className="btn btn-whatsapp btn-sm"
+                        href={`https://wa.me/91${b.phone}?text=${encodeURIComponent(
+                          `Hi ${b.name}, your service booking (${b.id}) for ${t(b.appliance)} on ${b.date} (${b.time}) has been ${b.status === 'completed' ? 'completed' : 'confirmed'} by Orange Refrigeration.\nAddress: ${b.address}\nOur technician will visit your location. For queries call: ${SHOP.phones[0]}`
+                        )}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={t('sendAcceptanceWa')}
                       >
-                        {BOOKING_STATUSES.map((s) => (
-                          <option key={s} value={s}>{t(s)}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <a
-                      className="btn btn-whatsapp btn-sm"
-                      href={`https://wa.me/91${b.phone}?text=${encodeURIComponent(
-                        `Hi ${b.name}, your service booking (${b.id}) for ${t(b.appliance)} on ${b.date} (${b.time}) has been confirmed by Orange Refrigeration.\nAddress: ${b.address}\nOur technician will visit your location. For queries call: ${SHOP.phones[0]}`
-                      )}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      title={t('sendAcceptanceWa')}
-                    >
-                      💬 {t('notifyCustomer') || 'WhatsApp'}
-                    </a>
-                    <button
-                      type="button"
-                      className="btn btn-danger btn-sm"
-                      onClick={() => {
-                        if (window.confirm(`Delete booking ${b.id} for ${b.name}? This action cannot be undone.`)) {
-                          deleteBooking(b.id)
-                        }
-                      }}
-                      title="Delete booking"
-                    >
-                      🗑️
-                    </button>
+                        💬 {t('notifyCustomer') || 'WhatsApp'}
+                      </a>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => {
+                          if (window.confirm(`Delete booking ${b.id} for ${b.name}? This action cannot be undone.`)) {
+                            deleteBooking(b.id)
+                          }
+                        }}
+                        title="Delete booking"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
