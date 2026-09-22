@@ -14,19 +14,6 @@ import {
   subscribeReviews,
 } from '../store.js'
 
-const BRANDS_LIST = [
-  { name: 'Samsung', logo: '🌐' },
-  { name: 'LG', logo: '✨' },
-  { name: 'Whirlpool', logo: '🌀' },
-  { name: 'Voltas', logo: '❄️' },
-  { name: 'Blue Star', logo: '⭐' },
-  { name: 'Daikin', logo: '💨' },
-  { name: 'Godrej', logo: '🟢' },
-  { name: 'Haier', logo: '🔴' },
-  { name: 'Panasonic', logo: '⚡' },
-  { name: 'Lloyd', logo: '💎' },
-]
-
 function AllCouponsModal({ vouchers, onClose, onSelect }) {
   const [copied, setCopied] = useState(null)
 
@@ -530,21 +517,6 @@ export default function Home() {
               <span className="service-name">{t(k)}</span>
             </button>
           ))}
-        </div>
-      </section>
-
-      {/* Brands We Service Showcase */}
-      <section className="section">
-        <h2 className="section-title">{t('brandsWeService')}</h2>
-        <div className="brands-marquee-banner">
-          <div className="brands-marquee-track">
-            {BRANDS_LIST.map((b) => (
-              <div key={b.name} className="brand-pill">
-                <span className="brand-pill-ico">{b.logo}</span>
-                <span>{b.name}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
